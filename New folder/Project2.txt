@@ -1,0 +1,53 @@
+
+Source - Gitlab
+
+Commit -> Github Actions -> multiple stages -> unit test, static code analysis, build artifact and create docker image, scan docker image for vulnerabilities, zinco testing, push the docker image to ecr, argocd deploy to eks.
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'  # This will trigger for tags like v1.0.0, v2.1.3, etc.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Unit Test
+        run: |
+          # Add your unit test commands here
+
+      - name: Static Code Analysis
+        run: |
+          # Add your static code analysis commands here
+
+      - name: Build Artifact
+        run: |
+          # Add your build artifact commands here
+
+      - name: Create Docker Image
+        run: |
+          # Add your Docker image creation commands here
+
+      - name: Scan Docker Image for Vulnerabilities
+        run: |
+          # Add your vulnerability scanning commands here
+
+      - name: ZincO Testing
+        run: |
+          # Add your ZincO testing commands here
+
+      - name: Push Docker Image to ECR
+        run: |
+          # Add your ECR push commands here
+
+      - name: ArgoCD Deploy to EKS
+        run: |
+          # Add your ArgoCD deployment commands here

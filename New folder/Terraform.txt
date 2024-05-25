@@ -1,0 +1,320 @@
+provider with aws
+=====================
+provider "aws" {
+  version = "~> 5.0"
+  region  = "us-east-1"
+}
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+===================================
+Two required_providers
+--------------------------
+terraform {
+    required_providers {
+      aws = {
+        source  = "hashicorp/aws"
+        version = "~> 4.14.0"
+        configuration_aliases = [aws.acc1, aws.acc2]
+      }
+    }
+  }
+  
+  provider "aws" {
+    alias  = "acc1"
+    region = "eu-central-1"
+    assume_role {
+      role_arn = "arn:aws:iam::ACC1:role/MyRoleAcc1"
+    }
+  }
+  
+  provider "aws" {
+    alias  = "acc2"
+    region = "eu-central-1"
+    assume_role {
+      role_arn = "arn:aws:iam::ACC2:role/MyRoleAcc2"
+    }
+  }
+==============================================================
+Cross-Referencing Resources
+===========================
+resource "aws_instance" "web" {
+    ami           = data.aws_ami.web.id
+    instance_type = "t1.micro"
+  }
+data "aws_ami" "web" {
+    most_recent = true
+    owners      = ["self"]
+    tags        = { Name = "app-server", Tested = "true" }
+  }
+================================================================
+Local_Values
+=============
+locals {
+    common_tags = {
+      Service = local.service_name
+      Owner   = local.owner
+    }
+  }
+locals {
+    service_name = "forum"
+    owner        = "Community Team"
+  }
+resource "aws_instance" "example" {
+    # ...
+    tags = local.common_tags
+  }
+====================================================
+conditional expressions
+=========================
+variable "a" {
+    description = "Some value"
+    default     = var.a != "" ? var.a : "default-a"
+  }
+resource "aws_db_instance" "example" {
+    name          = var.db_name
+    engine        = var.db_engine
+    instance_class = var.db_instance_class
+    create_if     = var.db_user != null
+  }
+=================================================
+Data sources
+=============
+data "aws_ami" "ubuntu" {
+    most_recent = true
+    filter {
+      name   = "name"
+      values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325"]
+    }
+    filter {
+      name   = "virtualization-type"
+      values = ["hvm"]
+    }
+    owners = ["099720109477"] # Canonical
+  }
+  
+  data "aws_availability_zones" "available" {
+    state = "available"
+  }
+  
+  output "virtual_machine_id" {
+    value = data.aws_availability_zones.available.names[0]
+  }
+  
+  output "virtual_machine_id1" {
+    value = data.aws_availability_zones.available.names[1]
+  }
+  
+  output "ips_with_list_interpolation" {
+    value = [for name in data.aws_availability_zones.available.names : name]
+  }
+  
+  resource "aws_instance" "first-ec2" {
+    ami           = data.aws_ami.ubuntu.id
+    instance_type = "t2.micro"
+    tags = {
+      Name = "RajeshKumar"
+    }
+  }
+=======================================================
+Dynamic_Block
+===========
+resource "aws_elastic_beanstalk_environment" "tfenvtest" {
+    name = "tf-test-name"
+    application = "${aws_elastic_beanstalk_application.tftest.name}"
+    solution_stack_name = "64bit Amazon Linux 2018.03 v2.11.4 running Go 1.12.6"
+  
+    dynamic "setting" {
+      for_each = var.settings
+      content {
+        namespace = setting.value["namespace"]
+        name      = setting.value["name"]
+        value     = setting.value["value"]
+      }
+    }
+  }
+
+Var file
+
+settings = [
+  {
+    namespace = "aws:elasticbeanstalk:environment"
+    name      = "EnvironmentType"
+    value     = "SingleInstance"
+  },
+  {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "MY_ENV_VAR"
+    value     = "my-value"
+  }
+]
+=======================================================
+Meta-Arguments (create before destroy, prevent destroy, ignore changes, replace triggered by)
+==========================
+resource "aws_instance" "example" {
+    ami           = "ami-0c55b159cbfafe1f0"
+    instance_type = "t2.micro"
+  
+    # Other configuration settings...
+  
+    lifecycle {
+      create_before_destroy = true
+    }
+  }
+resource "azurerm_sql_database" "example" {
+    # ... other configuration ...
+  
+    lifecycle {
+      prevent_destroy = true
+    }
+  }  
+  resource "azurerm_virtual_machine" "example" {
+    # ...
+    lifecycle {
+      ignore_changes = [
+        "network_interface_ids",
+        "storage_os_disk",
+        "computer_name",
+      ]
+    }
+  }
+  resource "example_database" "test" {
+    lifecycle {
+      replace_triggered_by = [terraform_data.replacement]
+    }
+  }
+=====================================================================  
+For-Each
+=========
+# my_buckets.tf
+module "bucket" {
+  for_each = toset(["assets", "media"])
+  source   = "./publish_bucket"
+  name     = "${each.key}_bucket"
+}
+             (or)
+resource "aws_iam_user" "the-accounts" {
+    for_each = toset(["Todd", "James", "Alice", "Dottie"])
+  
+    name = each.key
+  }
+            (or)
+resource "azurerm_resource_group" "rg" {
+    for_each = tomap({
+      a_group       = "eastus"
+      another_group = "westus2"
+    })
+  
+    name     = each.key
+     location = each.value
+  }
+=====================================================
+Local-Exec
+----------
+provider "aws" {
+    region = "us-west-2"
+  }
+  
+  resource "aws_instance" "example" {
+    ami           = "ami-0c55b159cbfafe1f0"
+    instance_type = "t2.micro"
+  
+    # Other instance configuration (e.g., security groups, key pair, etc.)
+  
+    provisioner "local-exec" {
+      command = "echo 'Instance created!'"
+    }
+  }
+
+Remote-Exec
+-----------
+resource "aws_instance" "example" {
+    ami           = "ami-0c55b159cbfafe1f0"
+    instance_type = "t2.micro"
+    connection {
+        type        = "ssh"
+        user        = "your_username"
+        password    = "your_password"
+        host        = self.public_ip
+      }
+    # Other instance configuration (e.g., security groups, key pair, etc.)
+  
+    provisioner "remote-exec" {
+      inline = [
+        "sudo apt-get update",
+        "sudo apt-get install -y apache2",
+      ]
+    }
+  }
+ ==================================================================
+ terraform import
+ ============
+ resource "aws_instance" "example" {
+    # ...instance configuration...
+}
+$ terraform import aws_instance.example i-abcd1234
+==================================================================
+multiple resources creation in mutliple regions in terraform
+-------------------------------------------------------
+provider "aws" {
+    alias  = "eu-west-1"
+    region = "eu-west-1"
+  }
+  
+provider "aws" {
+    alias  = "eu-south-1"
+    region = "eu-south-1"
+  }
+resource "aws_instance" "example_west" {
+    provider    = aws.eu-west-1
+    ami         = "ami-654321"
+    instance_type = "t2.micro"
+    # Other instance configuration...
+  }
+  
+resource "aws_instance" "example_south" {
+    provider    = aws.eu-south-1
+    ami         = "ami-987654"
+    instance_type = "t2.micro"
+    # Other instance configuration...
+  }
+==============================================================
+terraform vaults
+------------------------
+provider "vault" {
+    address = "https://vault.example.com"
+  }
+  
+  data "vault_generic_secret" "myapp_secrets" {
+    path = "myapp/secrets"
+  }
+  
+  output "my_secret_value" {
+    value = data.vault_generic_secret.myapp_secrets.data["my_secret_key"]
+  }
+=============================================================
+
+terraform version
+terraform fmt
+terraform init
+terraform validate
+terraform plan
+terraform apply
+terraform destroy
+terraform state list
+terraform state show <resource_name>
+terraform import <resource_type>.<resource_name> <existing_id>
+terraform output
+terraform output -state=<path_to_state_file>
+terraform graph
+terraform workspace list
+terraform providers
+terraform refresh
+terraform taint <resource_name>
+terraform untaint <resource_name>
