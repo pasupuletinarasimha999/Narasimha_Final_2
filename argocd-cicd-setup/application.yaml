@@ -10,9 +10,9 @@ metadata:
 spec:
   project: my-app-project
   source:
-    repoURL: 
+    repoURL: git@gihub.com:pasupuletinarasimha999/Narasimha_Final_2.git
     targetRevision: HEAD
-    path: environments/dev/my-app
+    path: argocd-cicd-setup/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: my-app
