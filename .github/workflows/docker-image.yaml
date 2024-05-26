@@ -33,6 +33,6 @@ jobs:
       - name: Login to GitHub Packages
         uses: actions/checkout@v3
         with:
-          repository: ravindrasinghh/argocd-setup
+          repository: pasupuletinarasimha999/Narasimha_Final_2
           ref: 'master'
           token: ${{ secrets.G_TOKEN }}
