@@ -35,5 +35,5 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: pasupuletinarasimha999/Narasimha_Final_2
-          ref: 'master'
+          ref: 'main'
           token: ${{ secrets.G_TOKEN }}
