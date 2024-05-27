@@ -9,21 +9,17 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: my-app-project
-  source:
-    repoURL: git@gihub.com:pasupuletinarasimha999/Narasimha_Final_2.git
-    targetRevision: HEAD
-    path: argocd-cicd-setup/dev
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: my-app
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-      allowEmpty: false
-      
-    syncOptions:
-      - Validate=true
-      - CreateNamespace=true
-      - PrunePropagationPolicy=foreground
-      - PruneLast=true
+source:
+  repoURL: 'https://github.com/pasupuletinarasimha999/Narasimha_Final_2.git'
+  path: argocd-cicd-setup/dev
+  targetRevision: HEAD
+destination:
+  server: 'https://kubernetes.default.svc'
+  namespace: my-app
+syncPolicy:
+  automated:
+    selfHeal: true
+  syncOptions:
+    - CreateNamespace=true
+    - PruneLast=true
+    - Validate=false
