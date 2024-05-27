@@ -27,6 +27,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: my-custom-container-svc
+  namespace: my-app
 spec:
   selector:
     app: nginx
