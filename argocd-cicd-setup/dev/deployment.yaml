@@ -20,3 +20,5 @@ spec:
           image: pasupuletinarasimha999/test123:latest
           ports:
             - containerPort: 80
+      imagePullSecrets:
+      - name: regcred
