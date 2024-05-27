@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-custom-container
+  name: deployment3
   namespace: my-app
 spec:
   replicas: 1
@@ -15,7 +15,7 @@ spec:
         app: nginx
     spec:
       containers:
-        - name: my-container
+        - name: deployment3-container
           imagePullPolicy: Always
           image: pasupuletinarasimha999/test123:latest
           ports:
