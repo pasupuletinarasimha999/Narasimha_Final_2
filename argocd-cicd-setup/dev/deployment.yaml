@@ -163,12 +163,6 @@ metadata:
   name: customuser1
   namespace: my-app
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: customuser2
-  namespace: my-app
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -381,11 +375,6 @@ spec:
       cpu: 200m
       memory: 500Mi
     type: Container
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: my-app
 ---
 apiVersion: v1
 kind: ResourceQuota
