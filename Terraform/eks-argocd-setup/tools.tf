@@ -7,6 +7,7 @@ resource "helm_release" "argocd" {
   create_namespace = true
   version          = "3.35.4"
   values           = [file("values/argocd.yaml")]
+  depends_on = [aws_eks_node_group.private-nodes]
 }
 module "nginx-controller" {
   source  = "terraform-iaac/nginx-controller/helm"
@@ -23,4 +24,5 @@ module "nginx-controller" {
       type  = "string"
     }
   ]
+  depends_on = [aws_eks_node_group.private-nodes]
 }
