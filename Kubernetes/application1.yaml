@@ -9,17 +9,17 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: my-app-project
-source:
-  repoURL: 'https://github.com/pasupuletinarasimha999/Narasimha_Final_2.git'
-  path: Kubernetes/Code/dev/elk/
-  targetRevision: HEAD
-destination:
-  server: 'https://kubernetes.default.svc'
-  namespace: elk
-syncPolicy:
-  automated:
-    selfHeal: true
-  syncOptions:
-    - CreateNamespace=true
-    - PruneLast=true
-    - Validate=false
+  source:
+    repoURL: 'https://github.com/pasupuletinarasimha999/Narasimha_Final_2.git'
+    path: Kubernetes/Code/dev/elk/
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: elk
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - Validate=false
