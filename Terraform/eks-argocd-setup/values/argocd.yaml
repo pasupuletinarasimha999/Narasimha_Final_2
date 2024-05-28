@@ -10,8 +10,8 @@ server:
   # -- Argo CD server name
   name: server
   # -- Change the service type to LoadBalancer
- # service:
- #   type: LoadBalancer
+  service:
+    type: LoadBalancer
   # Other configuration options...
   extraArgs:
     - --insecure
