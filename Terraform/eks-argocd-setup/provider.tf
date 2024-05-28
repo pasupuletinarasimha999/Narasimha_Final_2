@@ -10,6 +10,13 @@ terraform {
     }
   }
 }
+terraform {
+  backend "s3" {
+    bucket = "terraformstatefilenew "
+    key    = "statefile"
+    region = "us-east-1"
+  }
+}
 
 provider "helm" {
   kubernetes {
