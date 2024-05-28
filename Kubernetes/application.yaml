@@ -17,6 +17,9 @@ spec:
     server: 'https://kubernetes.default.svc'
     namespace: my-app
   syncPolicy:
+    managedNamespaceMetadata:
+      labels:
+        argocd.argoproj.io/managed-by: argo
     automated:
       selfHeal: true
     syncOptions:
