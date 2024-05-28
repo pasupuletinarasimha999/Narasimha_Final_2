@@ -5,7 +5,6 @@ resource "helm_release" "argocd" {
   chart            = "argo-cd"
   namespace        = "argocd"
   create_namespace = true
-  version          = "3.35.4"
   values           = [file("values/argocd.yaml")]
   depends_on = [aws_eks_node_group.private-nodes]
 }
@@ -15,7 +14,6 @@ resource "null_resource" "create_nginx_ingress_namespace" {
     command = "kubectl create namespace nginx-ingress"
   }
 }
-
 resource "helm_release" "nginx_ingress" {
   name       = "nginx-ingress-controller"
   repository = "https://charts.bitnami.com/bitnami"
