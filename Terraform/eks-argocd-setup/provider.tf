@@ -12,9 +12,11 @@ terraform {
 }
 terraform {
   backend "s3" {
-    bucket = "terraformstatefilenew "
-    key    = "statefile"
+    bucket = "narasimhapriya"
+    key    = "global/terraform.tfstate"
     region = "us-east-1"
+    dynamodb_table = "terraform-lock-table"
+    encrypt        = true
   }
 }
 
