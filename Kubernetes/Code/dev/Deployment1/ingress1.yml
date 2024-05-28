@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: argocd-ingress-rules
   namespace: argocd
+  labels:
+    argocd.argoproj.io/managed-by: argocd
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     kubernetes.io/ingress.class: "nginx"
