@@ -8,7 +8,7 @@ SECRET_KEY = '5yo93-8a^%idwkzxz@6gq67p2ml#sraf4=7#pqg+28mv)koo@m'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['af6163390cd0947b1ad53119c34fbf37-1967251059.us-east-1.elb.amazonaws.com']
 
 # Application definition
 INSTALLED_APPS = [
