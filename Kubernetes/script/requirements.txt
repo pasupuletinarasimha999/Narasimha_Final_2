@@ -1,4 +1,0 @@
-﻿asgiref
-Django
-sqlparse
-tzdata
