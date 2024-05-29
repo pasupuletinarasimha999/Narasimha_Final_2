@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+{% comment %} {% load crispy_forms_tags %} -- not used, using -- using widget_tweaks in this page{% endcomment %} 
+{% include 'includes/messages.html' %}
+
+
+<div class="container-fluid my-form">
+    <br><br> 
+    <h3>{{title|title}}</h3>
+    
+
+    <div class='row  justify-content-center'>
+        <div class='mb-5 container col-md-6 offset-md-3'>
+        
+        <form method="POST" class="form-group"  enctype="multipart/form-data"   novalidate>
+            {% csrf_token %}
+
+            
+                {%  include 'includes/form_template.html' %}
+                <br>
+            
+                <div>
+                    <button type="submit" class="btn btn-info btn-block">Edit Address</button>
+                </div>
+        
+        </form>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock content %}

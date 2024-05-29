@@ -1,0 +1,112 @@
+{% extends 'base.html' %} 
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+{% include 'includes/messages.html' %}
+
+  
+<div class="my-form m-0">
+    <br><br><br>
+    <div class="container">
+        <div class ='justify-content-center'>
+
+
+                <div class="row-checkout">
+                    <div class="col-12">
+
+                        <div class="card border-light mb-4 shadow">
+                            <div class="card-header text-center">
+                                <b>Order Informations</b>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title"><span class='font-weight-bold'>Id:</span> {{ order.id }}</h6>
+                                <h6 class="card-title"><span class='font-weight-bold'>Date:</span> {{ order.order_date }}</h6>
+                                <h6 class="card-title"><span class='font-weight-bold'>Owner Name:</span> {{ order.user.get_user_fullname }}</h6>
+                                <h6 class="card-title"><span class='font-weight-bold'>Total Amount:</span><span class="bg-warning"> {{ order.total_amount }}$   for   ({{items_quant}}) items</span></h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row-checkout">
+                    <div class="col-12">
+                        <div class="card border-light mb-4 shadow">
+                            <div class="card-header text-center">
+                                <b>Shipping Address Settings</b>
+                            </div>
+                            <div class="card-body">
+                                <h4 class="card-title"><span class='font-weight-bold'>Owner Name:</span> {{ order.user.get_user_fullname }}</h6>
+                                <p class="card-text"><b>Phone Number:  </b>{{ order.phone_no }}</p>
+                                <hr>
+                                <p class="card-text"><b>Country:  </b>{{ order.country }}</p>
+                                <p class="card-text"><b>City:  </b>{{ order.city }}</p>
+                                <p class="card-text"><b>Zip Code:  </b>{{ order.zip_code }}</p>
+                                <p class="card-text"><b>Street:  </b>{{ order.street }}</p>
+                                <p class="card-text"><b>State:  </b>{{ order.state }}</p>
+                               
+                                <div class="d-flex justify-content-end">
+                                    <a href="{% url 'ecommerce:editaddress-view' order_id=order.id  %}" class="btn btn-sm btn-success">Edit Address</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row-checkout">
+                    <div class="col-12">
+                        <div class="card border-light mb-4 shadow">
+                            <div class="card-header text-center">
+                               <b>Payment Mode Choise</b>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Please choise only one of the payment mode bellow : </h5>
+                                <br>
+                            
+                                                         
+                            <form method='POST' action="{% url 'ecommerce:add_payment_mode' order_id=order.id  %}"  class='form-group' novalidate>
+                                {% csrf_token %}
+                                {{ form }}
+                                <div class="row row-cols-1 row-cols-md-2">
+                                    <div class="col mb-5">
+                                        <div class="text-center">
+                                            <img src="{% static 'img/card_payment.png' %}"  width="100px" height="100px" alt="card payment mode">
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="form-check  pt-2">
+                                                <input class="form-check-input" type="radio" name="payment_mode" value="CARD"  id="exampleRadios1"  checked>
+                                                <label class="form-check-label" for="exampleRadios1">
+                                                  Card Payment ( CARD )
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col mb-3">
+                                        <div class="text-center">
+                                            <img src="{% static 'img/cash_payment.png' %}" width="100px" height="100px" alt="...">
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="form-check  pt-2">
+                                                <input class="form-check-input" type="radio" name="payment_mode"  value="COD" id="exampleRadios2">
+                                                <label class="form-check-label" for="exampleRadios2">
+                                                Cash on Delevery ( COD )
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>  
+                                </div>
+
+                                <div class='text-center mt-5' >
+                                    <a href="" type="submit" class="btn btn-sm btn-info">Add Payment Mode</a>
+                                </div>
+                            </form>   
+                            </div>
+                        </div>
+                    </div>   
+                </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock content %}
