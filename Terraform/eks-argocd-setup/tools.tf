@@ -21,11 +21,6 @@ resource "helm_release" "nginx_ingress" {
   namespace = "nginx-ingress"
 
   set {
-    name  = "service.type"
-    value = "ClusterIP"
-  }
-
-  set {
     name  = "controller.ingressClass"
     value = "nginx"
   }
