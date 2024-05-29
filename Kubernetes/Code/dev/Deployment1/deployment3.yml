@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deployment3 //python code
+  name: deployment3
   namespace: my-app 
 spec:
   replicas: 1
