@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /app
 
 # Install dependencies
-COPY requirements.txt /app/
+COPY Kubernetes/script/requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the project files into the container
