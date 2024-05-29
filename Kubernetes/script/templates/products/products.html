@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load hitcount_tags %}
+
+{% block content %}
+{% include 'includes/messages.html' %}
+
+{% comment %} <a href="{% url 'products:product' pro_id=product.id %}">View Product</a> {% endcomment %}
+
+<div class="my-form container p-5 my-5 rounded border border-warning">
+      
+            
+  &nbsp;&nbsp;
+<!-- --------------------------------------------- -->
+      <!--sort products -->
+      <row>
+          <h2 class="text-center">Products</h2>
+      
+          <!-- sort products button -->
+          <section class='float-right mr-4'>
+            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+              <div class="btn-group" role="group">
+                <button id="btnGroupDrop" type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Sort By
+                </button>
+                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                  <a class="dropdown-item"   href="{% for product in products %}?SORTATZ={{product.id}}{% endfor %}"> Alphabetically (A to Z)</a>
+                  <a class="dropdown-item"   href="{% for product in products %}?SORTRATING={{product.id}}{% endfor %}">Rating (Hight to Low)</a>
+                  <a class="dropdown-item"   href="{% for product in products %}?SORTPRICELTH={{product.id}}{% endfor %}">Price (Low to Hight)</a>
+                  <a class="dropdown-item"   href="{% for product in products %}?SORTPRICEHTL={{product.id}}{% endfor %}">Price (High to Low)</a>
+                  <a class="dropdown-item"   href="{% for product in products %}?SORTNEWARRIVAL={{product.id}}{% endfor %}">New Arrival</a>
+                </div>
+              </div>
+            </div>
+          </section>
+          <!--  end sort products button -->
+      </row>  
+       <br><br>
+ <!--All products list -->
+      <section>
+        <div class="container-fluid">
+          <div class="row p-5">
+
+            {% for product in products %}
+            <div>
+              <div class="card m-2" style="width: 18rem;">
+                  <div>
+                      <a href="{% url 'products:product' pro_id=product.id %}" class="btn btn-outline">
+                        <img src="{{ product.photo.url }}" class="card-img-top" alt={{ product.name}}>
+                      </a>
+                  </div>
+                
+                <div class="card-body">
+                  <h5 class="card-title">{{ product.name }}</h5>
+                  <p class="card-text">Current Price: <span id="price" class="bg-dark text-light rounded-circle p-2">{{product.price}}</span></p>
+
+
+                  <!-- product_average_rating_stars -->
+                  <span>
+                    {% include 'includes/product_average_rating_stars.html' %}
+                  </span>
+                  <!-- product_average_rating_stars -->
+
+
+
+                  <div class="d-inline-flex">
+                    <span class='p-1'style="font-size:15px; color:#a2947e;"><i class="fa-regular fa-eye fa-lg"></i> {% get_hit_count for product %}</span>
+                    &nbsp;
+                    <span class='p-1'><i class="fa-solid fa-heart fa-lg red-color"></i>{{product.likes}}</span> 
+                  </div>
+
+                  <br>
+                  <br>
+
+                  <p class="card-text">
+                    {% if product.description|length >= 12 %}
+                    {% comment %} {{ product.description|slice:":50" }}.. more {% endcomment %}
+                    {{ product.description|truncatewords:12 }}<a href="{% url 'products:product' pro_id=product.id %}" ><i class="fa-solid fa-angles-right red-color"></i></a>
+                    
+                    {% else %}
+                    {{ product.description }}
+                    {% endif %}
+                  </p>
+                  <hr>
+
+                  <!-- all  authenticatedd users  --> 
+                  {% if request.user.is_authenticated %}
+                      <div>
+                          <!--  add to cart  form for authenticated user -->
+                          <div>
+                              <form method='GET' action="{% url 'ecommerce:add-to-cart' pro_id=product.id %}" novalidate>
+                                  {% csrf_token %}
+                                  {{form}}
+                                    <button type="submit"  name='allProductsbutton' class="btn btn-sm btn-success"><i class="fa-solid fa-xl fa-cart-plus"></i></button> 
+                              </form>
+                              <span style="font-size:15px; color:#a2947e;"> 
+                                  <i class="fas fa-shopping-cart"></i>
+                                  ({% for p in orderproducts %}
+                                      {% if product.id == p.product.id %}
+                                        {{ p.quantity|default_if_none:'0' }}
+                                      {% endif %}
+                                  {% endfor %})
+                              </span>
+                          </div>
+                          <div> 
+                             <!--  edit & delete for admin only --> 
+                             <!-- admin only --> 
+                              {% if request.user.is_authenticated and request.user.is_superuser %}
+                              <div class="btn-group" role="group">
+                                <a href="{% url 'products:update-product' pro_id=product.id %}" class="btn btn-outline-light"><i class="fa-regular fa-pen-to-square"></i></a>
+                                <a href="{% url 'products:delete-product' pro_id=product.id %}" class="btn btn-outline-light"><i class="fa-regular fa-trash-can"></i></a>
+                              </div>
+                            {% endif %}
+                            <!--  end admin only -->
+                          </div>
+
+                      </div>
+                      {% else %}
+                      <!-- end  div of only authenticated   --> 
+
+
+                      <!-- start div of  only anonymous see this div --> 
+                     
+                      <div>
+                        <!-- add-to-cart form  for anonymous --> 
+                        <div class="card-text">
+                             
+                            <form method='GET' action="{% url 'ecommerce:add-to-cart' product.id %}"  class='form-group' novalidate>
+                              {% csrf_token %}
+                              {{form}}
+                              <div class='btn-group'>
+                                <button type="submit"  class="btn btn-sm btn-success" data-toggle="tooltip" data-placement="top" title="Need Login to add this product to the cart"><i class="fa-solid fa-xl fa-cart-plus"></i></button> 
+                              </div>
+                            </form>
+              
+                          </div>  
+                        
+                      </div>
+                    
+                      <!-- end div of  only anonymous  --> 
+                    {% endif %}
+                </div>
+              </div>
+              </div>
+              {% empty %}
+              <div class="card-body">
+                <h3 class="card-text">No product.</h3>
+            </div>
+            {% endfor %} 
+            
+            
+
+          </div>
+
+
+
+          <!-- pagination-->
+          {% if products.has_other_pages %}
+          <div>
+              <nav aria-label="Page navigation conatiner"></nav>
+                  <ul class="pagination pagination-sm justify-content-center">
+                      {% if products.has_previous %}
+                          <li class="page-item">
+                              <a class="page-link" href="?page={{products.previous_page_number}}">
+                                  &laquo; Previous 
+                              </a>
+                          </li>
+                      {% endif %}
+
+                      {% for page_number in products.paginator.page_range %}
+                          {% if page_number == products.number %}
+                              <li  class="page-item active">
+                                  <span class="page-link">{{ page_number }}
+                                      <span class="sr-only">(current)</span>
+                                  </span>
+                              </li>
+                          {% else %}
+                              <li class="page-item"><a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a></li>
+                          {% endif %}
+                      {% endfor %}
+
+                      {% if products.has_next %}
+                          <li class="page-item" >
+                              <a class="page-link" href="?page={{ products.next_page_number }}">
+                                  Next &raquo;
+                              </a>
+                          </li>
+                      {% endif %}
+                  </ul>
+              </nav>
+          </div>
+      {% endif %}
+      <!-- pagination end-->
+       
+    
+    </div>
+      </section>
+
+<!-- ------------------------------------------------------------------------- -->
+        
+
+
+
+    </div>
+
+
+
+
+{% endblock %}

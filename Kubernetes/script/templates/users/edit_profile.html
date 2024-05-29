@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+{% include 'includes/messages.html' %}.
+
+{# Load the tag library #}
+{% load bootstrap4 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+
+<!-- https://pypi.org/project/django-bootstrap-datepicker-plus/  -->
+<!-- https://github.com/monim67/django-bootstrap-datepicker-plus -->
+<!-- this is tags for django-bootstrap-datepicker-plus -->
+
+{{ form.media }}      {# Adds widget's JS/CSS files from CDN #} 
+
+
+
+<br><br><br>
+
+<div class="my-form container p-5 my-5 rounded border border-warning">
+    <section>
+       
+        <h2 class="text-center">Edit Your Profile:</h2>
+        <hr>
+        <!--  Edit Your Profile form  -->
+        <div class='row  justify-content-center'>
+            <div class='col-md-8'>
+                
+                
+                <form method='POST' class='form-group' enctype='multipart/form-data' novalidate>
+                    {% csrf_token %}
+                    <div>
+                        {{form|crispy}}
+                    </div>
+                    <div>
+                        <div class='btn-group'>
+                            <button type="submit" class="btn btn-info">Save</button>
+                        </div>
+                    </div>
+                </form>
+
+
+            </div>
+        </div>
+
+    </section>
+</div>
+
+{% endblock content %}

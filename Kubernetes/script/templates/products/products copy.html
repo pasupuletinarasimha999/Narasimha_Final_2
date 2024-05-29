@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load hitcount_tags %}
+
+{% block content %}
+{% include 'includes/messages.html' %}
+
+{% comment %} <a href="{% url 'products:product' pro_id=product.id %}">View Product</a> {% endcomment %}
+
+<div class="my-form container p-5 my-5 rounded border border-warning">
+      
+            
+  &nbsp;&nbsp;
+<!-- --------------------------------------------- -->
+      <!--All products -->
+      <section>
+        <h1 class="text-center">Products</h1>
+        
+        <div class="container-fluid">
+          <div class="row p-5">
+
+            {% for product in products %}
+            <div>
+              <div class="card m-2" style="width: 18rem;">
+                  <div class='my-image-container'>
+                        {% if request.user.is_authenticated %}
+                            <a href="{% url 'products:like-product' pro_id=product.id %}" class="btn my-button"><i class="fa-solid fa-heart fa-2xl" style="color:#ffffff"></i></a>  
+                            {% for like in likes %}
+                                    {{like.like_status}}
+                                        {% if like.like_status %}
+                                          <a   href="{% url 'products:like-product' pro_id=product.id %}" class="btn my-button"><i class="fa-solid fa-heart fa-2xl red-color"></i></a>  
+                                        {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <a href="{% url 'products:like-product' pro_id=product.id %}" class="btn my-button"  title="Need Login to like this product"><i class="fa-solid fa-heart fa-2xl" style="color:#ffffff;"></i></a>  
+                        {% endif %}
+                      <a href="{% url 'products:product' pro_id=product.id %}" class="btn btn-outline">
+                      <img src="{{ product.photo.url }}" class="card-img-top" alt={{ product.name}}>
+                      </a>
+                  </div>
+                
+                <div class="card-body">
+                  <h5 class="card-title">{{ product.name }}</h5>
+                  
+
+                  <!-- product_average_rating_stars -->
+                  <span>
+                    {% include 'includes/product_average_rating_stars.html' %}
+                  </span>
+                  <!-- product_average_rating_stars -->
+
+
+
+                  <div class="d-inline-flex">
+                    <span class='p-1'style="font-size:15px; color:#a2947e;"><i class="fa-regular fa-eye fa-lg"></i> {% get_hit_count for product %}</span>
+                    &nbsp;
+                    <span class='p-1'><i class="fa-solid fa-heart fa-lg red-color"></i>{{product.likes}}</span> 
+                  </div>
+
+                  <br>
+                  <br>
+
+                  <p class="card-text">
+                    {% if product.description|length >= 12 %}
+                    {% comment %} {{ product.description|slice:":50" }}.. more {% endcomment %}
+                    {{ product.description|truncatewords:12 }}<a href="{% url 'products:product' pro_id=product.id %}" ><i class="fa-solid fa-angles-right red-color"></i></a>
+                    
+                    {% else %}
+                    {{ product.description }}
+                    {% endif %}
+                  </p>
+                  <!-- admin only --> 
+                  {% if request.user.is_authenticated and request.user.is_superuser %}
+                    <div class="btn-group" role="group">
+                      <a href="{% url 'products:update-product' pro_id=product.id %}" class="btn btn-outline-light mb-2"><i class="fa-regular fa-pen-to-square"></i></a>
+                      <a href="{% url 'products:delete-product' pro_id=product.id %}" class="btn btn-outline-light mb-2"><i class="fa-regular fa-trash-can"></i></a>
+                    </div>
+                  {% endif %}
+
+                  <!-- all users  --> 
+                  <div class="btn-group-sm   d-flex flex-row-reverse" role="group">
+                    <button type="submit"  class="btn btn-sm btn-success"><i class="fa-solid fa-xl fa-cart-plus"></i></button> 
+                  </div>
+                </div>
+              </div>
+              </div>
+              {% empty %}
+              <div class="card-body">
+                <h3 class="card-text">No product.</h3>
+            </div>
+            {% endfor %}  
+          </div>
+        </div>
+      </section>
+
+<!-- ------------------------------------------------------------------------- -->
+        
+
+
+
+    </div>
+
+
+
+
+{% endblock %}

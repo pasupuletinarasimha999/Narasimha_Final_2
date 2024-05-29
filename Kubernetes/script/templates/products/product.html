@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load hitcount_tags %}
+<!--https://studygyaan.com/django/adding-a-social-share-button-to-your-django-website -->
+{% load social_share %}
+
+
+{% block content %}
+{% include 'includes/messages.html' %}
+    
+<div class="container  my-5 rounded border border-warning">
+        
+    <h2 class="text-center">Product Details</h2>
+  
+
+
+  <section>
+    <div class="row" >
+          <div class="card mb-3 w-100" >
+            <div class="row no-gutters">
+              
+              <!-- image column and like buton-->
+              <!-- Like/Dislike button  for authenticated user --> 
+              <div class="col-md-4">
+                  <div class='my-image-container'>
+                      {% if request.user.is_authenticated %}
+                          {% if like_user.like_status == True %}
+                              <a href="{% url 'products:like-product' pro_id=product.id %}" class="btn my-button"><i class="fa-solid fa-2xl red-color fa-heart"></i></a>  
+                          {% elif like_user.like_status == False %}
+                              <a  href="{% url 'products:like-product' pro_id=product.id %}" class="btn my-button"><i class="fa-solid fa-heart fa-2xl" style="color:#ffffff;"></i></a>  
+                          {% endif %}
+                      {% else %}
+                          <a href="{% url 'products:like-product' pro_id=product.id %}" class="btn my-button"  title="Need Login to like this product"><i class="fa-solid fa-heart fa-2xl" style="color:#ffffff;"></i></a>  
+                      {% endif %}  
+                      <img src="{{ product.photo.url }}" class="card-img" alt={{ product.name }}>
+                  </div>
+              </div>
+              <!-- image column and like button -->
+
+
+
+              <div class="col-md-8">
+                <div class="card-body">
+                        <h5 class="card-title" id="productName">{{product.name}}</h5>
+                        <hr>
+                        <p class="card-text" id="description">{{product.description}}</p>
+                        <hr>
+                        <p class="card-text">Current Price: <span id="price" class="bg-dark text-light rounded-circle p-2">{{product.price}}</span></p>
+                      
+
+                          <!-- product_average_rating_stars -->
+                           <span>
+                           {% include 'includes/product_average_rating_stars.html' %}
+                           </span>
+                          <!-- product_average_rating_stars -->
+                          
+
+                          <div class="d-inline-flex">
+                            <span class='p-1'style="font-size:15px; color:#a2947e;"><i class="fa-regular fa-eye fa-lg"></i> {% get_hit_count for product %}</span>
+                            &nbsp; 
+                            <span class='p-1'><i class="fa-solid fa-heart fa-lg red-color"></i>{{product.likes}}</span> 
+                          </div>
+
+                      <!--  only authenticated users see this div  --> 
+                      {% if request.user.is_authenticated %}
+                      <div>
+                          <!--  add to cart  form for authenticated user -->
+                          <div class="card-text border rounded border-secondary p-2 my-1">
+                                  <form method='GET' action="{% url 'ecommerce:add-to-cart' pro_id=product.id %}"  class='form-group' novalidate>
+                                    {% csrf_token %}
+                                    {{form}}
+                                    <div class='btn-group'>
+                                      <button type="submit"  class="btn btn-sm btn-success"><i class="fa-solid fa-xl fa-cart-plus"></i></button> 
+                                    </div>
+                                  </form>
+
+                                  <div class="btn-group" role="group" aria-label="Basic example">
+                                    <a href="{% url 'ecommerce:cart-view' order_id=order.id  %}"  type="link" class="btn btn-sm btn-light">Go to Cart</a>
+                                    <a href="{% url 'products:products'  %}"    type="link" class="btn btn-sm btn-light">Continue Shopping</a>
+                                  </div>
+                          </div>
+                          <div>
+                              <!-- Like/Dislike button  for authenticated user --> 
+                              {{ user_like_count }}
+                              {% if user_like_count == 1 %}
+                                  <a href="{% url 'products:like-product' pro_id=product.id %}" class="btn btn-outline-light mb-2"><i class="fa-solid fa-xl red-color fa-heart"></i></a>  
+                              {% elif user_like_count == 0 %}
+                                  <a href="{% url 'products:like-product' pro_id=product.id %}" class="btn btn-outline-light mb-2"><i class="fa-solid fa-heart fa-xl" style="color: #c5c3c3;"></i></a>  
+                              {% endif %}
+
+                              <div class="social-sharing border rounded border-secondary p-2 my-1">
+                              </h5><i class="fas fa-share-alt"></i></h5>
+                              {% post_to_facebook object_or_url "Share to Facebook!" %}
+                              {% post_to_twitter "New Product: {{product.name}}. Check it out!" object_or_url "Share to Twitter" %}
+                              {% post_to_whatsapp object_or_url "Share via WhatsApp" %}
+                              </div>
+        
+                            
+                            
+                             <!--  edit & delete for admin only --> 
+                             {% if request.user.is_authenticated and request.user.is_superuser %}
+                         
+                                <!-- edit this product--> 
+                                <a href="{% url 'products:update-product' pro_id=product.id %}" class="btn btn-outline-light mb-2"><i class="fa-regular fa-xl fa-pen-to-square"></i></a>
+                                <!-- delete this product-->
+                                <a href="{% url 'products:delete-product' pro_id=product.id %}" class="btn btn-outline-light mb-2"><i class="fa-regular fa-xl fa-trash-can"></i></a>
+                          
+                             {% endif %}
+                          </div>
+
+                      </div>
+                      {% else %}
+                      <!-- end  div of only authenticated   --> 
+
+
+                      <!-- start div of  only anonymous see this div --> 
+                     
+                      <div>
+                        <!-- add-to-cart form  for anonymous --> 
+                        <div class="card-text border rounded p-2 my-1">
+                             
+                            <form method='GET' action="{% url 'ecommerce:add-to-cart' product.id %}"  class='form-group' novalidate>
+                              {% csrf_token %}
+                              {{form}}
+                              <div class='btn-group'>
+                                <button type="submit"  class="btn btn-sm btn-success" data-toggle="tooltip" data-placement="top" title="Need Login to add this product to the cart"><i class="fa-solid fa-xl fa-cart-plus"></i></button> 
+                              </div>
+                            </form>
+                            <!-- All Products -->
+                            <div>
+                              <a href="{% url 'products:products'  %}" type="link" class="btn btn-sm btn-light">All Products</a>
+                            </div>
+                        
+                          </div>  
+                       
+                      </div>
+
+                      <div class="social-sharing border rounded  p-2 my-1">
+                      </h5><i class="fas fa-share-alt"></i></h5>
+                      {% post_to_facebook object_or_url "Share to Facebook!" %}
+                      {% post_to_twitter "New Product: {{product.name}}. Check it out!" object_or_url "Share to Twitter" %}
+                      {% post_to_whatsapp object_or_url "Share via WhatsApp" %}
+                      </div>
+                    
+                      <!-- end div of  only anonymous  --> 
+                    {% endif %}
+                 
+                    
+                </div>
+              </div>
+          
+            </div>  
+          </div>
+    </div>      
+  </section> 
+    
+    <!-- review section -->
+    <section>
+      <!-- review list -->
+      <div class="myrow my-1">
+          <div class="card  my-1">
+            <div class="card-header">
+              <h4 class='text-center'>Product Reviews</h4>
+            </div>
+
+
+            <div class="card-body">
+                   <!-- display review.rating_value as stars -->
+                    {% for review in reviews %}
+                        <div class='ml-5'>
+                          {% if review.rating_value == 5 %}
+                            <span style="font-size:24px; color: #fd4;">
+                              <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                            </span>
+                          {% endif %}  
+                        </div>
+                        <div class='ml-5'>
+                          {% if review.rating_value == 4 %}
+                              <span style="font-size:24px; color: #fd4;">
+                                <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                              </span>
+                          {% endif %}
+                        </div> 
+                        <div class='ml-5'>
+                          {% if review.rating_value == 3 %}
+                              <span style="font-size:24px; color: #fd4;">
+                                <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                              </span>
+                          {% endif %}
+                        </div> 
+                        <div class='ml-5'>
+                          {% if review.rating_value == 2 %}
+                              <span style="font-size:24px; color: #fd4;">
+                                <i class="fa fa-star"></i><i class="fa fa-star"></i>
+                              </span>
+                          {% endif %}
+                        </div>
+                        <div class='ml-5'>
+                          {% if review.rating_value == 1 %}
+                              <span style="font-size:24px; color: #fd4;">
+                                <i class="fa fa-star"></i>
+                              </span>
+                          {% endif %}
+                        </div> 
+                    <!--  end of display review.rating_value as stars -->
+
+
+                  <div class="media mb-3">
+                    <div class="mr-2"> {{  review.user.profile_image }}
+                      <img width="60" hight="60" class="rounded-circle border img-thumbnail" src="{{  review.user.get_user_profile.profile_image.url }}">
+                    </div>
+                    <div class="media-body">
+                      <p>{{ review.rating_text }}</p>
+                      <small class="text-muted">Posted by {{ review.user.get_user_fullname }} on {{ review.created_at }}</small>
+                    </div>
+                  </div>
+                  <br>
+                {% empty %}
+                No review yet !
+                {% endfor %}
+            </div>	
+          </div>
+      </div>  
+      <!--end review list -->
+     
+     
+      <br><br><br><br>
+
+
+      <!-- add your review  -->
+      <div class="row myrow my-1"> 
+              <h5 class='text-left my-3'>laeve Reviews</h5>
+                <!-- add  review  -->
+                <form method='POST' action="{% url 'products:review_rating_product' pro_id=product.id  %}"  class="form-group" novalidate>
+                  {% csrf_token %} 
+                  <!--rating_value-->
+                      <div class="rating-container my-2">
+                        <input  type="radio" name="rating_value" id="star_5" value="5">
+                        <label  for="star_5"><i class="fa fa-star"></i></label>
+                    
+                        <input  type="radio" name="rating_value" id="star_4" value="4">
+                        <label  for="star_4"><i class="fa fa-star"></i></label>
+                    
+                        <input  type="radio" name="rating_value" id="star_3" value="3">
+                        <label  for="star_3"><i class="fa fa-star"></i></label>
+                          
+                        <input  type="radio" name="rating_value" id="star_2" value="2">
+                        <label  for="star_2"><i class="fa fa-star"></i></label>
+                    
+                        <input  type="radio" name="rating_value" id="star_1" value="1">
+                        <label  for="star_1"><i class="fa fa-star"></i></label>
+                      </div>
+                      <!--rating_text-->
+                      <div>
+                        <textarea name='rating_text' class="form-control" rows="5" placeholder='your rating text'></textarea>
+                      </div>
+                      <div class='btn-group'>
+                        <button type="submit"  class="btn btn-sm btn-warning my-2">Add Review</button> 
+                      </div>
+                </form>
+      </div>
+      <!-- end add your review  -->
+      
+    </section>
+    <!--  end review section -->   
+</div>                        
+{% endblock %}
