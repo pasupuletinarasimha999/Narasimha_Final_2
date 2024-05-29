@@ -25,3 +25,11 @@ spec:
             name: deploytwoservice
             port:
               number: 80
+      - path: /v3
+        pathType: Prefix
+        backend:
+          service:
+            name: deploythreeservice
+            port:
+              number: 80
+
