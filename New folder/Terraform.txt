@@ -309,7 +309,8 @@ terraform apply
 terraform destroy
 terraform state list
 terraform state show <resource_name>
-terraform import <resource_type>.<resource_name> <existing_id>
+terraform import <resource_type>.<resource_name> <existing_id> --> create resource blueprint with empty braces and execute terraform import aws_db_instance.testdb testdb --> stores the pulled data in state file cannot be seen in resource block we created. so execute terraform show to show the pulled data.
+terraform state rm <resource_type>.<resource_name> --> removes the imported or normal resources
 terraform output
 terraform output -state=<path_to_state_file>
 terraform graph
