@@ -316,5 +316,5 @@ terraform graph
 terraform workspace list
 terraform providers
 terraform refresh
-terraform taint <resource_name>
+terraform taint <resource_name> -->During the next terraform apply, the tainted resource will be destroyed and recreated, even if the Terraform configuration hasn't changed.
 terraform untaint <resource_name>
