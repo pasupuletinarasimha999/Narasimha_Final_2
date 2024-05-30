@@ -16,8 +16,8 @@ resource "aws_db_instance" "mydb" {
     skip_final_snapshot                   = true
     storage_encrypted                     = true
     storage_type                          = "gp2"
-    username                              = "postgres"
-	password                              = "Paster813"
+    username                              = var.db_username
+    password                              = var.db_password
     vpc_security_group_ids = [aws_security_group.dbsg.id]
     tags = {
     Name = "mydb"  # Set the friendly name or identifier here
