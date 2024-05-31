@@ -5,7 +5,7 @@ connection_params = {
     "dbname": "mydb",
     "user": "postgres",
     "password": "Paster813",
-    "host": "terraform-20240530120519907300000001.cxyimaw88ih8.us-east-1.rds.amazonaws.com",
+    "host": "terraform-20240531033623139300000006.cxyimaw88ih8.us-east-1.rds.amazonaws.com",
     "port": "5432"
 }
 
