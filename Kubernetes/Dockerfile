@@ -16,6 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY Kubernetes/script/atsllm/. /app/
 
 # Expose the port your Django app will run on
-EXPOSE 8000
+EXPOSE 8501
 
 CMD ["streamlit","run", "app.py"]
