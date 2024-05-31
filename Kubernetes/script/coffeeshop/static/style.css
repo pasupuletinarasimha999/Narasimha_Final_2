@@ -1,0 +1,23 @@
+h1 {
+    color: greenyellow;
+}
+
+.input-number{
+    width: 55px;
+    margin: 0px 2px 0px 2px;
+    text-align: center;
+}
+
+.container-box{
+    border: 1px solid #ead9d9;
+    padding: 8px;
+    align-items: center;
+}
+
+.type{
+    text-align: center;
+    font-size: larger;
+    font-weight: 500;
+    font-family: cursive;
+    margin-bottom: 15px;
+}
