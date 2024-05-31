@@ -19,6 +19,6 @@ spec:
           imagePullPolicy: Always
           image: pasupuletinarasimha999/test123:latest
           ports:
-            - containerPort: 80
+            - containerPort: 8501
       imagePullSecrets:
       - name: regcred
