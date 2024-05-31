@@ -1,0 +1,190 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css"
+          integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    {#            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"#}
+    {#            crossorigin="anonymous"></script>#}
+    <script src="{% static 'javascript/bootstrap.min.js' %}" crossorigin="anonymous"></script>
+    <title>Coffee Shop</title>
+    <style>
+        thead tr th {
+            font-weight: 600;
+        }
+
+        th {
+            font-weight: 300;
+        }
+    </style>
+</head>
+<body>
+<main class="container" role="main">
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link active" href="/">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/sales">Sales</a>
+        </li>
+    </ul>
+    <img style="margin: auto;display: flex;" src="{% static 'images/coffeeShop.png' %}">
+    <div class="card mb-3">
+        <div class="card-header bg-success">
+            <h4 class="panel-title text-light">Total sales</h4>
+        </div>
+        <div class="card-body">
+            <h5>{{ total_sale }} SGD</h5>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header bg-warning">
+            <h4 class="panel-title">Coffee Order</h4>
+        </div>
+        <div class="card-body">
+            <p>Total: {{ coffeOrder|length }} </p>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for r in coffeOrder %}
+                    <tr>
+                        <th> {{ r.name }}</th>
+                        <th> {{ r.type }}</th>
+                        <th> {{ r.price }}</th>
+                        <th> {{ r.date }}</th>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header bg-warning">
+            <h2 class="panel-title">Tea Order</h2>
+        </div>
+        <div class="card-body">
+            <p>Total: {{ teaOrder|length }} </p>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for r in teaOrder %}
+                    <tr>
+                        <th> {{ r.name }}</th>
+                        <th> {{ r.type }}</th>
+                        <th> {{ r.price }}</th>
+                        <th> {{ r.date }}</th>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header bg-dark">
+            <h2 class="panel-title text-info">Tall Order</h2>
+        </div>
+        <div class="card-body">
+            <p>Total: {{ tallOrder|length }} </p>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for r in tallOrder %}
+                    <tr>
+                        <th> {{ r.name }}</th>
+                        <th> {{ r.type }}</th>
+                        <th> {{ r.price }}</th>
+                        <th> {{ r.date }}</th>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header bg-dark">
+            <h2 class="panel-title text-info">Grande Order</h2>
+        </div>
+        <div class="card-body">
+            <p>Total: {{ grandeOrder|length }} </p>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for r in grandeOrder %}
+                    <tr>
+                        <th> {{ r.name }}</th>
+                        <th> {{ r.type }}</th>
+                        <th> {{ r.price }}</th>
+                        <th> {{ r.date }}</th>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header bg-dark">
+            <h2 class="panel-title text-info">Venti Order</h2>
+        </div>
+        <div class="card-body">
+            <p>Total: {{ ventiOrder|length }} </p>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for r in ventiOrder %}
+                    <tr>
+                        <th> {{ r.name }}</th>
+                        <th> {{ r.type }}</th>
+                        <th> {{ r.price }}</th>
+                        <th> {{ r.date }}</th>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,138 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css"
+          integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    {#            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"#}
+    {#            crossorigin="anonymous"></script>#}
+    <script src="{% static 'javascript/bootstrap.min.js' %}" crossorigin="anonymous"></script>
+    <script src="{% static 'javascript/index.js' %}"></script>
+    <title>Coffee Shop</title>
+</head>
+<body>
+<main class="container" role="main">
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link active" href="/">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/sales">Sales</a>
+        </li>
+    </ul>
+    <img style="margin: auto;display: flex;" src="{% static 'images/coffeeShop.png' %}">
+    <div class="card">
+        {% for drink in drinks %}
+            <div class="card-header">
+                <h2 class="panel-title">{{ drink.name }}</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if drink.price_tall > 0 %}
+                        <div class="col-md-4 col-lg-4 col-sm-12">
+                            <div class="container-box">
+                                <img class="card-img-top" src="{% static 'images/download.jpg' %}" alt="Card image cap">
+                                <div class="type">Tall - {{ drink.price_tall }} $</div>
+                                <div class="input-group mx-auto" style="width: 140px;">
+                      <span class="input-group-btn">
+                          <button type="button" class="btn btn-success btn-number"
+                                  onclick="itemAdded('{{ drink.name }}','tall')">
+                            <i class="fas fa-plus"></i>
+                          </button>
+                      </span>
+                                    <input type="text" class="form-control input-number" id='{{ drink.name }}-tall'
+                                           data-drink-type={{ drink.type }} data-price={{ drink.price_tall }} value="0">
+                                    <span class="input-group-btn">
+                          <button type="button" class="btn btn-warning btn-number"
+                                  onclick="itemSubtract('{{ drink.name }}','tall')">
+                              <i class="fas fa-minus"></i>
+                          </button>
+                      </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if drink.price_grande > 0 %}
+                        <div class="col-md-4 col-lg-4 col-sm-12">
+                            <div class="container-box">
+                                <img class="card-img-top" src="{% static 'images/grand.jpg' %}" alt="Card image cap">
+                                <div class="type">Grande - {{ drink.price_grande }} $</div>
+                                <div class="input-group mx-auto" style="width: 140px;">
+                      <span class="input-group-btn">
+                          <button type="button" class="btn btn-success btn-number"
+                                  onclick="itemAdded('{{ drink.name }}','grande')">
+                            <i class="fas fa-plus"></i>
+                          </button>
+                      </span>
+                                    <input type="text" class="form-control input-number" id='{{ drink.name }}-grande'
+                                           data-drink-type={{ drink.type }} data-price={{ drink.price_grande }}
+                                           value="0">
+                                    <span class="input-group-btn">
+                          <button type="button" class="btn btn-warning btn-number"
+                                  onclick="itemSubtract('{{ drink.name }}','grande')">
+                              <i class="fas fa-minus"></i>
+                          </button>
+                      </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if drink.price_venti > 0 %}
+                        <div class="col-md-4 col-lg-4 col-sm-12">
+                            <div class="container-box">
+                                <img class="card-img-top" src="{% static 'images/grand.jpg' %}" alt="Card image cap">
+                                <div class="type">Venti - {{ drink.price_venti }} $</div>
+                                <div class="input-group mx-auto" style="width: 140px;">
+                      <span class="input-group-btn">
+                          <button type="button" class="btn btn-success btn-number"
+                                  onclick="itemAdded('{{ drink.name }}','venti')">
+                            <i class="fas fa-plus"></i>
+                          </button>
+                      </span>
+                                    <input type="text" class="form-control input-number" id='{{ drink.name }}-venti'
+                                           data-drink-type={{ drink.type }} data-price={{ drink.price_venti }}
+                                           value="0">
+                                    <span class="input-group-btn">
+                          <button type="button" class="btn btn-warning btn-number"
+                                  onclick="itemSubtract('{{ drink.name }}','venti')">
+                              <i class="fas fa-minus"></i>
+                          </button>
+                      </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="card mt-3 mb-5">
+        <div class="card-header">
+            <h2>Orders</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-borderless" id="orderTable">
+                <thead id="orderBody">
+                <tr>
+                    <th scope="col">Action</th>
+                    <th scope="col">Item</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Qty</th>
+                    <th scope="col">Price</th>
+                </tr>
+                </thead>
+                {#  <tbody></tbody>#}
+            </table>
+            <a href="#" class="btn btn-primary float-right" onclick="submitOrder()">Checkout</a>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
