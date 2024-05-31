@@ -18,4 +18,4 @@ COPY Kubernetes/script/atsllm/. /app/
 # Expose the port your Django app will run on
 EXPOSE 8000
 
-CMD ["python3", "app.py"]
+CMD ["streamlit","run", "app.py"]
