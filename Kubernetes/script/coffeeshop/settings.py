@@ -33,7 +33,7 @@ SECRET_KEY = os.getenv('SECRET_KEY'),
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [ '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = [ '127.0.0.1', 'localhost', 'a8f757fb30d8d4a849a382d323398398-1619869364.us-east-1.elb.amazonaws.com']
 
                    
 
