@@ -9,13 +9,13 @@ WORKDIR /app
 # Install core dependencies.
 RUN apt-get update && apt-get install -y libpq-dev build-essential
 # Install dependencies
-COPY Kubernetes/script/requirements.txt /app/
+COPY Kubernetes/script/atsllm/requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the project files into the container
-COPY Kubernetes/script/. /app/
+COPY Kubernetes/script/atsllm/. /app/
 
 # Expose the port your Django app will run on
 EXPOSE 8000
 
-CMD ["python", "manage.py", "makemigrations"] && ["python", "manage.py", "migrate"] && ["python", "manage.py", "createsuperuser"] && ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python3", "app.py"]
