@@ -18,7 +18,4 @@ COPY Kubernetes/script/. /app/
 # Expose the port your Django app will run on
 EXPOSE 8000
 
-CMD ["python", "manage.py", "migrate"]
-CMD ["python", "manage.py", "createsuperuser"]
-# Start the Django development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "migrate"] && ["python", "manage.py", "createsuperuser"] && ["python", "manage.py", "runserver", "0.0.0.0:8000"]
