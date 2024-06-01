@@ -39,5 +39,5 @@ spec:
           service:
             name: deploythreeservice
             port:
-              number: 443
+              number: 8501
 
