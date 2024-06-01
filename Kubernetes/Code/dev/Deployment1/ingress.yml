@@ -32,5 +32,5 @@ spec:
           service:
             name: deploythreeservice
             port:
-              number: 8501
+              number: 30928
 
