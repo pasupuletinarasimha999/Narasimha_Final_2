@@ -1,5 +1,5 @@
 # Use the official Python base image
-FROM python:latest
+FROM python:3.11
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -18,4 +18,5 @@ COPY Kubernetes/script/atsllm/. /app/
 # Expose the port your Django app will run on
 EXPOSE 8501
 
-CMD ["streamlit","run", "app.py"]
+ENTRYPOINT ["streamlit","run" ]
+CMD ["app.py"]
