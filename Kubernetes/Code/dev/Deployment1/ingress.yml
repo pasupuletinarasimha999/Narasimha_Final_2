@@ -5,9 +5,17 @@ metadata:
   namespace: my-app
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     kubernetes.io/ingress.class: "nginx"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - www.krazyworks.shop
+    # reference secret for production TLS certificate
+    secretName: miniapi-production-certificate
   rules:
    - http:
       paths:
