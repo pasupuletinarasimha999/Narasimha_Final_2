@@ -17,7 +17,8 @@ spec:
     # reference secret for production TLS certificate
     secretName: miniapi-production-certificate
   rules:
-   - http:
+   - host: www.krazyworks.shop 
+     http:
       paths:
       - path: /v1
         pathType: Prefix
