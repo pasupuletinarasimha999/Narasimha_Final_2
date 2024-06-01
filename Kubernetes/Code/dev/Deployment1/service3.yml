@@ -8,7 +8,7 @@ metadata:
     prometheus-enabled: "true"
 spec:
   ports:
-  - port: 30928
+  - port: 80
     targetPort: 8501
     protocol: TCP
   selector:
