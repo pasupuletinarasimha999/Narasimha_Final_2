@@ -1,0 +1,136 @@
+pipeline {
+  agent any
+  environment {
+    AWS_ACCOUNT_ID = "YOUR_ACCOUNT_ID_HERE"
+    AWS_DEFAULT_REGION = "CREATED_AWS_ECR_CONTAINER_REPO_REGION"
+    IMAGE_REPO_NAME = "ECR_REPO_NAME"
+    // Remove IMAGE_TAG variable (not needed with latest image)
+    AWS_CREDS = credentialsId('aws-ecr-credentials', type: 'SecretText')
+    REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
+  }
+  stages {
+
+    stage('SCM Checkout') {
+      git credentialsId: 'GIT_CREDENTIALS', url: 'https://github.com/MithunTechnologiesDevOps/spring-boot-mongo-docker.git', branch: 'master'
+    }
+
+    stage("Maven Clean Package") {
+      def mavenHome = tool name: "Maven-3.6.1", type: "maven"
+      def mavenCMD = "${mavenHome}/bin/mvn"
+      sh "${mavenCMD} clean package"
+    }
+
+    stage('Build Docker Image') {
+      sh "docker build -t ${REPOSITORY_URI}:latest ."  // Use ":latest" tag
+    }
+
+    stage('SonarQube Scan') {
+      // Install SonarScanner for Jenkins (if not already installed)
+      // See https://plugins.jenkins.io/sonarscanner for installation instructions
+
+      // Configure SonarQube server connection (replace with your SonarQube server details)
+      withSonarQubeEnv('YOUR_SONARQUBE_SERVER_URL') {
+        sh '''
+          mvn sonar:sonar \
+            -Dsonar.projectKey=YOUR_PROJECT_KEY \
+            -Dsonar.projectName=YOUR_PROJECT_NAME \
+            -Dsonar.sources=. \
+            -Dsonar.java.binaries=target/classes \
+            -Dsonar.host.url=YOUR_SONARQUBE_SERVER_URL \
+            -Dsonar.login=YOUR_SONARQUBE_USERNAME \
+            -Dsonar.password=YOUR_SONARQUBE_PASSWORD
+        '''
+      }
+    }
+
+    stage('Logging into AWS ECR') {
+      steps {
+        script {
+          sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI} --amazonaws-access-key-id ${AWS_CREDS[0]} --amazonaws-secret-access-key ${AWS_CREDS[1]}"
+        }
+      }
+    }
+
+    stage('Pushing to ECR') {
+      steps {
+        script {
+          sh "docker push ${REPOSITORY_URI}:latest"  // Use ":latest" tag
+        }
+      }
+    }
+
+    stage("Deploy To Kubernetes Cluster") {
+      // Update the deployment configuration to use the latest image
+      kubernetesDeploy(
+        configs: 'springBootMongo.yml',
+        kubeconfigId: 'KUBERNATES_CONFIG',
+        containerName: 'your-container-name',  // Add container name used in deployment config
+        containerImage: "${REPOSITORY_URI}:latest"  // Use ":latest" tag
+      )
+    }
+  }
+}
+=============================================
+
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID = credentialsId('aws-ecr-access-key', type: 'SecretText')
+        AWS_SECRET_ACCESS_KEY = credentialsId('aws-ecr-secret-key', type: 'SecretText')
+        EKS_CLUSTER_NAME = '<your_eks_cluster_name>'
+        KUBECTL_CREDENTIALS_ID = 'eks-cluster-credentials' // Replace with your credential ID
+    }
+
+    stages {
+        stage('Authenticate ECR') {
+            steps {
+                script {
+                    sh 'aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID'
+                    sh 'aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY'
+                    sh 'aws ecr get-authorization-token --registry-ids <your_ecr_registry_id>'
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Get authorization token from previous stage output
+                    def authToken = sh(script: 'aws ecr get-authorization-token --registry-ids <your_ecr_registry_id> | jq -r .authorizationData[0].authorizationToken', returnStdout: true).trim()
+                    def ecrUri = "<your_ecr_registry_id>.dkr.ecr.<your_aws_region>.amazonaws.com"
+                    def baseImage = "<your_base_image_name>:<your_base_image_tag>"
+
+                    // Login to ECR
+                    sh "docker login -u AWS -p $authToken $ecrUri"
+
+                    // Build Docker image (assuming Dockerfile and Java code in workspace)
+                    sh 'docker build -t $ecrUri/$baseImage .'
+
+                    // Tag the image with a unique identifier
+                    def imageName = "${ecrUri}/${baseImage}:${BUILD_TIMESTAMP}"
+                    sh "docker tag $ecrUri/$baseImage $imageName"
+
+                    // Push the image to ECR
+                    sh "docker push $imageName"
+                }
+            }
+        }
+        stage('Deploy to EKS') {
+            steps {
+                // Use AWS credentials with kubectl access to the EKS cluster
+                withCredentials([username: 'aws', password: $KUBECTL_CREDENTIALS_ID]) {
+                    sh "kubectl config set-credentials aws" // Assuming AWS credentials provide kubectl access
+                    sh "kubectl config set-cluster <your_eks_cluster_name>" // Set EKS cluster name
+                    sh "kubectl config view" // Verify kubectl configuration (optional)
+
+                    // Deploy your application using kubectl (replace with deployment manifest)
+                    sh """
+                        # Assuming deployment.yaml references the image name variable
+                        sed -i "s/<your_image_name>/$imageName/g" deployment.yaml
+                        kubectl apply -f deployment.yaml
+                    """
+                }
+            }
+        }
+    }
+}
