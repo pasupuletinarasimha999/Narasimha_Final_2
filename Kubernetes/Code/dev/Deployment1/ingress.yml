@@ -4,25 +4,6 @@ kind: Namespace
 metadata:
   name: my-app
 ---
-apiVersion: v1
-data:
-  .dockerconfigjson: eyJhdXRocyI6eyJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOnsidXNlcm5hbWUiOiJwYXN1cHVsZXRpbmFyYXNpbWhhOTk5IiwicGFzc3dvcmQiOiJQYXN0ZXI4MTMiLCJlbWFpbCI6InBhc3VwdWxldGluYXJhc2ltaGE5OTlAZ21haWwuY29tIiwiYXV0aCI6ImNHRnpkWEIxYkdWMGFXNWhjbUZ6YVcxb1lUazVPVHBRWVhOMFpYSTRNVE09In19fQ==
-kind: Secret
-metadata:
-  name: regcred
-  namespace: my-app
-type: kubernetes.io/dockerconfigjson
----
-apiVersion: v1
-data:
-  username: YWRtaW4=
-  password: MWYyZDFlMmU2N2Rm
-kind: Secret
-metadata:
-  name: db-secrets
-  namespace: my-app
-type: Opaque
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
