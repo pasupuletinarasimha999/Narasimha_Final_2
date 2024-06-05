@@ -34,7 +34,7 @@ spec:
             name: deploytwoservice
             port:
               number: 80
-      - path: /
+      - path: /v3
         pathType: Prefix
         backend:
           service:
