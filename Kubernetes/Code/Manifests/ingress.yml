@@ -15,7 +15,7 @@ spec:
   - hosts:
     - www.krazyworks.shop
     # reference secret for production TLS certificate
-    secretName: miniapi-production-certificatee
+    secretName: miniapi-production-certificate
   rules:
    - host: www.krazyworks.shop 
      http:
