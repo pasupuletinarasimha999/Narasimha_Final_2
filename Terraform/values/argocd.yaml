@@ -1,0 +1,15 @@
+---
+dex:
+  enabled: false
+
+server:
+  # -- Argo CD server name
+  name: server
+  # -- Change the service type to LoadBalancer
+  service:
+    #type: LoadBalancer
+    annotations:
+      external-dns.alpha.kubernetes.io/hostname: www.krazyworks.shop
+  # Other configuration options...
+  extraArgs:
+    - --insecure
