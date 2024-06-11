@@ -1,0 +1,25 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  # different name
+  name: letsencrypt-prod
+spec:
+  acme:
+    # now pointing to Let's Encrypt production API
+    server: https://acme-v02.api.letsencrypt.org/directory
+    #server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: pasupuletinarasimha256@gmail.com
+    privateKeySecretRef:
+      # storing key material for the ACME account in dedicated secret
+      name: account-key-prod
+    solvers:
+    - http01:
+       ingress:
+         class: nginx
+    - dns01:
+        route53:
+          hostedZoneID: Z094518528U0CKC6X69LA
+          region: us-east-1
+      selector:
+        dnsZones:
+        - "krazyworks.shop"
