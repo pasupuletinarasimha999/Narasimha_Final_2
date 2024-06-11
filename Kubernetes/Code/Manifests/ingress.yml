@@ -34,7 +34,14 @@ spec:
           service:
             name: deploythreeservice
             port:
-              number: 443 
+              number: 443
+      - path: /datadog
+        pathType: Prefix
+        backend:
+          service:
+            name: datadog-cluster-agent-admission-controller
+            port:
+              number: 443
   tls:
   - hosts:
     - app.krazyworks.shop
