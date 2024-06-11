@@ -1,23 +1,17 @@
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-rules
-  namespace: my-app
+  name: app-ingress-rules
+  namespace: argocd
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    cert-manager.io/issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     kubernetes.io/ingress.class: "nginx"
 spec:
   ingressClassName: nginx
-  tls:
-  - hosts:
-    - www.krazyworks.shop
-    # reference secret for production TLS certificate
-    secretName: miniapi-production-certificate
   rules:
-   - host: www.krazyworks.shop 
+   - host: app.krazyworks.shop
      http:
       paths:
       - path: /v1
@@ -34,32 +28,15 @@ spec:
             name: deploytwoservice
             port:
               number: 80
-      - path: /
+      - path: /v3
         pathType: Prefix
         backend:
           service:
             name: deploythreeservice
             port:
-              number: 443
-
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: argocd-ingress-rules
-  namespace: argocd
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    kubernetes.io/ingress.class: "nginx"
-spec:
-  ingressClassName: nginx
-  rules:
-   - http:
-      paths:
-      - path: /argocd
-        pathType: Prefix
-        backend:
-          service:
-            name: argocd-server
-            port:
-              number: 80
+              number: 443 
+  tls:
+  - hosts:
+    - app.krazyworks.shop
+    # reference secret for production TLS certificate
+    secretName: app-letsencrypt-certificate
