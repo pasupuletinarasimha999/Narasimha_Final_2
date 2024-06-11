@@ -34,7 +34,7 @@ spec:
           service:
             name: deploythreeservice
             port:
-              number: 8501 
+              number: 443 
   tls:
   - hosts:
     - app.krazyworks.shop
