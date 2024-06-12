@@ -35,11 +35,11 @@ spec:
             name: deploythreeservice
             port:
               number: 443
-      - path: /datadog
+      - path: /prometheus
         pathType: Prefix
         backend:
           service:
-            name: datadog-cluster-agent-admission-controller
+            name: prometheus-grafana
             port:
               number: 443
   tls:
