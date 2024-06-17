@@ -1,0 +1,43 @@
+Linux Boot Process: The boot process in Linux includes several steps: BIOS/UEFI initialization, boot loader execution (GRUB), kernel loading, initramfs (initial RAM filesystem) access, and the initialization of the init system (systemd or SysVinit), which completes the boot-up.
+Zero-size File: Use the touch command or redirect output of a command that produces no output with > filename.
+Soft and Hard Links: Soft links (symbolic links) are like shortcuts to files, created with ln -s source link. Hard links are direct pointers to the file’s inode, created with ln source link. Soft links can cross filesystems and can link to directories, while hard links cannot.
+Shell Script First Line: Typically #!/bin/bash or #!/bin/sh, known as a shebang, which specifies the interpreter. Without it, you’d run the script with bash script.sh or sh script.sh.
+Run Script in Background: Use nohup ./script.sh & or ./script.sh &.
+Crontab: A scheduler that executes tasks at specified times. Edit with crontab -e and list with crontab -l.
+Allow Ports: Use firewall tools like iptables or firewalld (firewall-cmd).
+Troubleshoot Remote Server: Check logs, resource usage, network connectivity, and service statuses.
+Linux Commands:
+ping: Check network connectivity.
+telnet: Connect to remote systems.
+curl: Transfer data from or to a server.
+wget: Download files from the web.
+Check Service Status: Use systemctl status service-name or service service-name status.
+Kill Process: Use kill PID or for a forceful kill, kill -9 PID.
+Nice and Renice: Adjust process priority; lower values mean higher priority.
+Inode: A data structure that stores file attributes and disk block locations.
+Check CPU Utilization: Use commands like top, htop, or mpstat.
+Top vs Htop: Both monitor system processes; htop has an enhanced interface and provides more information at a glance.
+Mount: Attach filesystems; use mount device directory.
+Troubleshoot Live Logs: Use tools like tail -f to follow log output in real-time.
+Sed Command: Stream editor for filtering and transforming text.
+Awk Command: Programming language for text processing.
+Grep and Egrep: Search text using patterns; egrep supports extended regex.
+List Directories Only: Use ls -d */ or find . -type d.
+Check Running Processes: Use commands like ps, top, or htop.
+Java Thread Dump: Use jstack PID or send a SIGQUIT signal.
+Check Running Ports: Use commands like netstat -tulnp or ss -tuln.
+Declare Variable in Shell Script: Use syntax like variable=value.
+Shell Special Variables:
+$?: Exit status of last command.
+$#: Number of arguments.
+$*: All arguments as a single string.
+Read Command Line Input: Use the read command.
+Umask: Default permission mask when creating new files/directories.
+Change File Permissions: Use the chmod command.
+Passwordless Remote Connection: Use SSH keys with ssh-copy-id for setup.
+Read-only vi Editor: Open with vi -R filename.
+Export Command: Set environment variables for current session and child processes.
+Error and Stdout Logs Separation: Redirect with operators like 2> for errors and > for stdout.
+Nohup Command: Run commands immune to hangups.
+Netstat Command: Network statistics; shows network connections, routing tables, etc.
+Run Script at Boot Level: Place scripts in init.d or use systemd services
