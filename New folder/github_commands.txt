@@ -1,0 +1,201 @@
+Advanced Git Commands
+Rebasing
+Command: git rebase branch_name
+Description: Rebasing is the process of moving or combining a sequence of commits to a new base commit. It is often used to keep a feature branch up to date with the main branch.
+Example:
+git checkout feature_branch
+git rebase main
+
+
+Interactive Rebase
+Command: git rebase -i HEAD~n
+Description: Interactive rebase allows you to edit, reorder, squash, or drop commits in a branch.
+Example:
+git rebase -i HEAD~3
+This opens an editor where you can choose actions for the last 3 commits.
+
+Cherry-Picking
+Command: git cherry-pick commit_hash
+Description: Cherry-picking is the act of picking a commit from a branch and applying it to another branch.
+Example:
+git checkout main
+git cherry-pick abc1234
+
+Stashing
+Commands:
+git stash: Stashes your changes.
+git stash apply: Applies the stashed changes.
+git stash pop: Applies and removes the stashed changes.
+git stash list: Lists all stashes.
+Description: Stashing allows you to save your uncommitted changes temporarily and clean your working directory.
+Example:
+git stash
+git pull origin main
+git stash apply
+
+Bisecting
+Commands:
+git bisect start: Starts the bisecting process.
+git bisect bad: Marks the current commit as bad.
+git bisect good commit_hash: Marks a known good commit.
+Description: Bisecting is used to find the commit that introduced a bug by performing a binary search.
+Example:
+git bisect start
+git bisect bad
+git bisect good abc1234
+
+Submodules
+Commands:
+git submodule add repository_url path: Adds a submodule.
+git submodule update --init --recursive: Initializes and updates submodules.
+Description: Submodules allow you to keep a Git repository as a subdirectory of another Git repository.
+Example:
+git submodule add https://github.com/example/repo.git path/to/submodule
+git submodule update --init --recursive
+
+Reflog
+Command: git reflog
+Description: Reflog is a mechanism to record updates to the tip of branches and other references. It allows you to recover lost commits.
+Example:
+git reflog
+
+Resetting
+Commands:
+git reset --soft commit_hash: Resets the HEAD to the specified commit, but leaves the working directory and index unchanged.
+git reset --mixed commit_hash: Resets the HEAD and index to the specified commit, but leaves the working directory unchanged.
+git reset --hard commit_hash: Resets the HEAD, index, and working directory to the specified commit.
+Description: Resetting is used to undo changes in your working directory and staging area.
+Example:
+git reset --soft HEAD~1
+
+Reverting
+Command: git revert commit_hash
+Description: Reverting creates a new commit that undoes the changes made by a previous commit. git revert is used to create a new commit that undoes the changes introduced by a previous commit. This is a safe way to undo changes because it doesn't alter the commit history
+              HEAD: Points to the latest commit in the current branch.
+              Index: Holds the changes that are staged and ready to be committed.(stage after git add.)
+              Working Directory: Contains the actual files you are working on.(stage before git add.)
+Example:
+git revert abc1234
+
+Squashing Commits
+Command: git rebase -i HEAD~n
+Description: Squashing commits combines multiple commits into one.
+Example:
+git rebase -i HEAD~3
+In the interactive editor, change pick to squash for the commits you want to combine.
+
+Amending Commits
+Command: git commit --amend
+Description: Amending allows you to modify the most recent commit.
+Example:
+git commit --amend -m "Updated commit message"
+
+
+
+Common Issues and Solutions
+===============================
+Merge Conflicts
+Issue: Conflicts occur when merging branches.
+Solution:
+git merge branch_name
+# Resolve conflicts in the files
+git add resolved_file
+git commit
+
+Detached HEAD State
+Issue: Working in a detached HEAD state.
+Solution:
+git checkout -b new_branch
+
+Accidentally Committed to the Wrong Branch
+Issue: Committed changes to the wrong branch.
+Solution:
+git checkout wrong_branch
+git log --> gives commit id
+git checkout correct_branch --> moving to correct branch to add that commit 
+git cherry-pick commit_hash
+git checkout wrong_branch
+git reset --hard HEAD~1
+
+Undoing a Commit
+Issue: Need to undo a commit.
+Solution:
+git revert commit_hash
+
+Recovering Deleted Branch
+Issue: Accidentally deleted a branch.
+Solution:
+git reflog
+git checkout -b branch_name commit_hash
+
+Rewriting Commit History
+Issue: Need to rewrite commit history.
+Solution:
+git rebase -i HEAD~n
+
+Large Binary Files in History
+Issue: Large binary files are bloating the repository.
+Solution:
+git filter-branch --tree-filter 'rm -f path_to_large_file' HEAD
+git push origin --force --all
+
+Squashing Commits
+Issue: Need to squash multiple commits into one.
+Solution:
+git rebase -i HEAD~n
+
+# Mark commits to be squashed with 's'
+Rebasing vs. Merging
+
+Issue: Deciding between rebasing and merging.
+Solution:
+Rebase: Use for a cleaner, linear history.
+git rebase branch_name
+Merge: Use to preserve the complete history.
+git merge branch_name
+
+Handling Submodules
+Issue: Managing submodules in a project.
+Solution:
+git submodule add repository_url path
+git submodule update --init --recursive
+
+
+Scenario-Based Questions
+How to handle a situation where you need to split a commit into multiple commits?
+Solution:
+git rebase -i HEAD~1
+# Mark the commit to be edited
+git reset HEAD^
+# Stage and commit changes separately
+git add part_of_changes
+git commit -m "First part of the changes"
+git add remaining_changes
+git commit -m "Second part of the changes"
+git rebase --continue
+
+How to handle a situation where you need to change the author of a commit?
+Solution:
+git commit --amend --author="New Author <new_author@example.com>"
+
+How to handle a situation where you need to remove sensitive data from the repository history?
+Solution:
+git filter-branch --force --index-filter \
+  'git rm --cached --ignore-unmatch path_to_sensitive_file' \
+  --prune-empty --tag-name-filter cat -- --all
+git push origin --force --all
+
+How to handle a situation where you need to synchronize a fork with the upstream repository?
+Solution:
+git remote add upstream upstream_repository_url
+git fetch upstream
+git checkout main
+git merge upstream/main
+git push origin main
+
+How to handle a situation where you need to resolve a complex merge conflict?
+Solution:
+git merge branch_name
+# Manually resolve conflicts in the files
+git add resolved_file
+git commit
