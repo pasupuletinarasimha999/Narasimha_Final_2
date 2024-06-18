@@ -11,6 +11,8 @@ spec:
       app: nginx
   template:
     metadata:
+      annotations:
+        ad.datadoghq.com/deployment3.logs: '[{"source":"deployment3","service":"deploythreeservice"}]'
       labels:
         app: nginx
     spec:
