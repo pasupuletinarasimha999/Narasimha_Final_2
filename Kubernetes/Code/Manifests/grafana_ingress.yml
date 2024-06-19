@@ -47,7 +47,7 @@ spec:
           service:
             name: prometheus-kube-prometheus-prometheus
             port:
-              number: 443
+              number: 9090
   tls:
   - hosts:
     - prometheus.krazyworks.shop
