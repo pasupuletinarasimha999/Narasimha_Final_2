@@ -45,9 +45,9 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: prometheus-grafana
+            name: prometheus-kube-prometheus-operator
             port:
-              number: 80
+              number: 443
   tls:
   - hosts:
     - prometheus.krazyworks.shop
