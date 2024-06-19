@@ -45,7 +45,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: prometheus-kube-prometheus-operator
+            name: prometheus-kube-prometheus-prometheus
             port:
               number: 443
   tls:
