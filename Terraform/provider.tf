@@ -16,7 +16,7 @@ terraform {
     kubectl = {
       source  = "gavinbunney/kubectl"
       version = "~> 1.14"
-  }
+    }
   }
 }
 data "aws_eks_cluster_auth" "cluster" {
@@ -24,9 +24,9 @@ data "aws_eks_cluster_auth" "cluster" {
 }
 terraform {
   backend "s3" {
-    bucket = "narasimhapriya"
-    key    = "global/terraform.tfstate"
-    region = "us-east-1"
+    bucket         = "narasimhapriya"
+    key            = "global/terraform.tfstate"
+    region         = "us-east-1"
     dynamodb_table = "terraform-lock-table"
     encrypt        = true
   }

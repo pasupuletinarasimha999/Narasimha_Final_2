@@ -2,6 +2,7 @@ resource "null_resource" "node_activation" {
   provisioner "local-exec" {
     command = "aws eks update-kubeconfig --region ${var.region-name} --name ${var.cluster_name}"
   }
+  depends_on = [module.eks]
 }
 
 

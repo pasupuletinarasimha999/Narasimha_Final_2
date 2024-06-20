@@ -1,7 +1,7 @@
 resource "helm_release" "cert_manager" {
-  name       = "cert-manager"
-  repository = "https://charts.jetstack.io"
-  chart      = "cert-manager"
+  name             = "cert-manager"
+  repository       = "https://charts.jetstack.io"
+  chart            = "cert-manager"
   create_namespace = true
   namespace        = "kube-system"
   set {
@@ -19,6 +19,7 @@ resource "helm_release" "cert_manager" {
   values = [
     "${file("values/values-cert-manager.yaml")}"
   ]
+  depends_on = [null_resource.node_activation]
 }
 module "cert_manager_irsa_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
@@ -34,4 +35,5 @@ module "cert_manager_irsa_role" {
       namespace_service_accounts = ["kube-system:cert-manager"]
     }
   }
+  depends_on = [null_resource.node_activation]
 }

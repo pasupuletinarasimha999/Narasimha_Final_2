@@ -1,0 +1,29 @@
+datadog:
+  apiKey: "9f7050de2d2e171c5af701d065f6d9e7"
+  appKey: "05c095c343af78ae9cde5865023e607b1258b5c8"
+  site: "datadoghq.com"
+  kubeStateMetricsEnabled: true
+  kubeStateMetricsCore:
+    enabled: true
+  collectEvents: true
+  leaderElection: true
+  clusterName: "eks-demo"
+  tags:
+    - "kube_cluster:eks-demo"
+  logs:
+    enabled: true
+    containerCollectAll: true
+agents:
+  tolerations:
+    - key: "node-role.kubernetes.io/master"
+      effect: "NoSchedule"
+  volumes:
+    - hostPath:
+        path: /var/run/docker.sock
+      name: dockersocket
+  volumeMounts:
+    - mountPath: /var/run/docker.sock
+      name: dockersocket
+
+rbac:
+  create: true

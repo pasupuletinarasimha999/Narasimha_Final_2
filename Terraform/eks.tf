@@ -2,11 +2,11 @@ module "eks" {
   source  = "registry.terraform.io/terraform-aws-modules/eks/aws"
   version = "18.17.0"
 
-  cluster_name    = var.cluster_name
-  cluster_version = var.cluster_version
-  cluster_endpoint_public_access  = true
+  cluster_name                   = var.cluster_name
+  cluster_version                = var.cluster_version
+  cluster_endpoint_public_access = true
 
- /* cluster_addons = {
+  /* cluster_addons = {
     coredns = {
       most_recent = true
     }
@@ -18,8 +18,8 @@ module "eks" {
     }
   }
   */
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
+  vpc_id      = module.vpc.vpc_id
+  subnet_ids  = module.vpc.private_subnets
   enable_irsa = true
 
   create_cluster_security_group = false
@@ -39,7 +39,7 @@ module "eks" {
 
   eks_managed_node_groups = {
     EKSNodes = {
-      instance_types = ["t2.medium"]
+      instance_types                        = ["t2.medium"]
       create_security_group                 = false
       attach_cluster_primary_security_group = true
 

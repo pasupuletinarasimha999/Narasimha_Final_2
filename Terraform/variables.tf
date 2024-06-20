@@ -4,12 +4,12 @@ variable "cluster_name" {
   default     = "eks-demo"
 }
 variable "db_username" {
-  type        = string
-  default     = "postgres"
+  type    = string
+  default = "postgres"
 }
 variable "db_password" {
-  type        = string
-  default     = "Paster813"
+  type    = string
+  default = "Paster813"
 }
 variable "region-name" {
   description = "Region in AWS"
@@ -25,7 +25,7 @@ variable "route53-zoneid" {
 
 variable "cluster_version" {
   type    = string
-  default = "1.28"
+  default = "1.30"
 }
 
 variable "cidr" {
@@ -50,12 +50,12 @@ variable "azs" {
 
 variable "aws_account_id" {
   description = "account id number"
-  default = "471112577330"
+  default     = "471112577330"
 }
 
 variable "aws_region" {
   description = "The AWS region to deploy to (e.g. us-east-1)"
-  default = "us-east-1"
+  default     = "us-east-1"
 }
 
 variable "external_dns_chart_version" {
@@ -79,5 +79,5 @@ variable "external_dns_zoneType" {
 variable "external_dns_domain_filters" {
   description = "External-dns Domain filters."
   type        = list(string)
-  default = ["www.krazyworks.shop"]
+  default     = ["www.krazyworks.shop"]
 }

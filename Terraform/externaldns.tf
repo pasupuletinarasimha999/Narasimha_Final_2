@@ -4,7 +4,7 @@ resource "helm_release" "external_dns" {
   repository = "https://charts.bitnami.com/bitnami"
   chart      = "external-dns"
   version    = var.external_dns_chart_version
-  
+
   set {
     name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
     value = module.external_dns_irsa_role.iam_role_arn
@@ -40,6 +40,7 @@ resource "helm_release" "external_dns" {
     name  = "domainFilters"
     value = "{${local.domain}}"
   }
+  depends_on = [null_resource.node_activation]
 }
 locals {
   domain = "krazyworks.shop"
@@ -131,4 +132,5 @@ module "external_dns_irsa_role" {
       namespace_service_accounts = ["kube-system:external-dns"]
     }
   }
+  depends_on = [null_resource.node_activation]
 }
