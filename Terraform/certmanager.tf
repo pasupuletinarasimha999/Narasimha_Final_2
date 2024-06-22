@@ -19,8 +19,9 @@ resource "helm_release" "cert_manager" {
   values = [
     "${file("values/values-cert-manager.yaml")}"
   ]
-  depends_on = [null_resource.node_activation]
+  depends_on = [module.cert_manager_irsa_role]
 }
+
 module "cert_manager_irsa_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "5.2.0" # Latest as of July 2022
@@ -36,4 +37,47 @@ module "cert_manager_irsa_role" {
     }
   }
   depends_on = [null_resource.node_activation]
+}
+
+resource "kubernetes_manifest" "certissuer" {
+  provider = kubernetes.eks_demo
+  manifest = {
+    apiVersion = "cert-manager.io/v1"
+    kind       = "ClusterIssuer"
+    metadata = {
+      name = "letsencrypt-prod"
+    }
+    spec = {
+      acme = {
+        server                  = "https://acme-v02.api.letsencrypt.org/directory"
+        email                   = "pasupuletinarasimha256@gmail.com"
+        privateKeySecretRef = {
+          name = "account-key-prod"
+        }
+        solvers = [
+          {
+            http01 = {
+              ingress = {
+                class = "nginx"
+              }
+            }
+          },
+          {
+            dns01 = {
+              route53 = {
+                hostedZoneID = "Z094518528U0CKC6X69LA"
+                region       = "us-east-1"
+                selector = {
+                  dnsZones = [
+                    "krazyworks.shop"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+  depends_on = [helm_release.cert_manager]
 }

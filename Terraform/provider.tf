@@ -22,6 +22,7 @@ terraform {
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_id
 }
+
 terraform {
   backend "s3" {
     bucket         = "narasimhapriya"
@@ -34,22 +35,26 @@ terraform {
 
 provider "helm" {
   kubernetes {
-    #config_path = "C:\\Users\\pasup\\.kube\\config"
+    config_path            = "~/.kube/config"
     host                   = module.eks.cluster_endpoint
     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
     token                  = data.aws_eks_cluster_auth.cluster.token
   }
 }
+provider "kubernetes" {
+  alias = "eks_demo"
+  config_path = "~/.kube/config"
+  config_context = "arn:aws:eks:us-east-1:471112577330:cluster/eks-demo"
+}
+provider "kubernetes" {
+  alias = "cluster2"
+  config_path = "~/.kube/config"
+  config_context = "arn:aws:eks:us-east-1:471112577330:cluster/cluster2"
+}
 
-/*provider "kubectl" {
-  apply_retry_count      = 5
-  host                   = module.eks.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-  load_config_file       = false
-
-  exec {
-    api_version = "client.authentication.k8s.io/v1alpha1"
-    command     = "aws"
-    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
-  }
-}*/
+provider "kubectl" {
+  alias                   = "cluster2"
+  host                    = module.eks.cluster_endpoint
+  cluster_ca_certificate  = base64decode(module.eks.cluster_certificate_authority_data)
+  token                   = data.aws_eks_cluster_auth.cluster.token
+}

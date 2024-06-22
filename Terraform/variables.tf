@@ -1,3 +1,8 @@
+variable "cluster2_name" {
+  description = "Enter eks cluster name - example like eks-demo, eks-dev etc"
+  type        = string
+  default     = "cluster2"
+}
 variable "cluster_name" {
   description = "Enter eks cluster name - example like eks-demo, eks-dev etc"
   type        = string
@@ -16,6 +21,11 @@ variable "region-name" {
   type        = string
   default     = "us-east-1"
 }
+variable "region_name" {
+  description = "Region in AWS"
+  type        = string
+  default     = "us-east-1"
+}
 variable "route53-zoneid" {
   description = "route53 in AWS"
   type        = string
@@ -27,7 +37,10 @@ variable "cluster_version" {
   type    = string
   default = "1.30"
 }
-
+variable "cluster2_version" {
+  type    = string
+  default = "1.30"
+}
 variable "cidr" {
   type    = string
   default = "10.0.0.0/16"
@@ -80,4 +93,16 @@ variable "external_dns_domain_filters" {
   description = "External-dns Domain filters."
   type        = list(string)
   default     = ["www.krazyworks.shop"]
+}
+
+variable "github_username" {
+  description = "used to integrate argocd to github"
+  type        = string
+  default     = "pasupuletinarasimha999"
+}
+variable "github_token" {
+  description = "used to integrate argocd to github"
+  type        = string
+  default     = "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"
+  sensitive   = true
 }
