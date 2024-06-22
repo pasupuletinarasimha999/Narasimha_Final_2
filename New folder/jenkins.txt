@@ -1,0 +1,203 @@
+What is a Jenkins agent: A Jenkins agent (or node) is a machine that is set up to offload build projects from the Jenkins master. Agents can run on different operating systems and can be configured to run specific types of jobs.
+Step-by-Step Guide
+	1. Configure the Jenkins Master
+		Log in to Jenkins Master:
+		Open your Jenkins dashboard in a web browser.
+		Add a New Node:
+		Go to "Manage Jenkins" -> "Manage Nodes and Clouds".
+		Click on "New Node".
+		Enter a name for the node and select "Permanent Agent".
+		Click "OK".
+		Configure Node Details:
+		Enter the required details such as:
+		Remote root directory: The directory on the agent machine where Jenkins will store files.
+		Labels: Labels to categorize the node (optional).
+		Usage: How Jenkins should use the node (e.g., "Use this node as much as possible").
+		Under "Launch method", select "Launch agent by connecting it to the master".
+		Save the Configuration:
+		Click "Save".
+	2. Set Up the Jenkins Agent
+		Download the Agent JAR File:
+		On the node configuration page, you will see a section called "Launch agent by connecting it to the master".
+		Download the agent.jar file from the provided link.
+		Transfer the JAR File to the Agent Machine:
+		Transfer the agent.jar file to the agent machine using SCP, FTP, or any other file transfer method.
+		Run the Agent:
+		Open a terminal on the agent machine.
+		Navigate to the directory where you placed the agent.jar file.
+		Run the following command to start the agent:
+		java -jar agent.jar -jnlpUrl <JENKINS_MASTER_URL>/computer/<NODE_NAME>/jenkins-agent.jnlp -secret <SECRET_KEY> -workDir "<REMOTE_ROOT_DIRECTORY>"
+		Replace <JENKINS_MASTER_URL>, <NODE_NAME>, <SECRET_KEY>, and <REMOTE_ROOT_DIRECTORY> with the appropriate values from your Jenkins master configuration.
+	3. Verify the Agent Connection
+		Check the Node Status:
+		Go back to the Jenkins dashboard.
+		Navigate to "Manage Jenkins" -> "Manage Nodes and Clouds".
+		You should see the new node listed and its status should be "Online".
+
+2. How do you handle parallel execution in Jenkins Pipelines?
+		pipeline {
+		agent any
+		stages {
+			stage('Parallel Stage') {
+				parallel {
+					stage('Unit Tests') {
+						steps {
+							echo 'Running Unit Tests'
+						}
+					}
+					stage('Integration Tests') {
+						steps {
+							echo 'Running Integration Tests'
+						}
+					}
+				}
+			}
+		}
+	}
+
+3. How do you back up Jenkins? -> /var/lib/jenkins
+4. folder structure of /var/lib/jenkins?
+	Jobs: Located in the jobs directory.
+	Plugins: Located in the plugins directory.
+	Configuration Files: Such as config.xml, credentials.xml, etc.
+	User Content: Located in the userContent directory.
+5. How do you handle credentials in Jenkins?
+		Steps:
+		Navigate to Credentials:
+		Go to Manage Jenkins > Manage Credentials.
+		Select a Domain:
+		You can add credentials to the global domain or create a new domain for more granular control.
+		Add Credentials:
+		Click on Add Credentials.
+		Select the type of credentials you want to add (e.g., Username with password, Secret text, SSH Username with private key, etc.).
+		Fill in the required fields and click OK.
+6. Describe multibranch pipelines in Jenkins
+	Multibranch Pipelines in Jenkins are a powerful feature that allows you to automatically create and manage Jenkins jobs for multiple branches of a repository. This is particularly useful for projects that follow a branching strategy, such as GitFlow, where different branches represent different stages of development (e.g., feature branches, release branches, etc)
+
+	Go to the Jenkins dashboard.
+	Click on New Item.
+	Enter a name for the job and select Multibranch Pipeline.
+	Click OK.
+	Configure the Multibranch Pipeline:
+	Branch Sources: Add a source for your repository.
+	Click on Add Source and select the type of repository (e.g., Git, GitHub, Bitbucket).
+	Configure the repository URL and credentials if needed.
+	Build Configuration: Specify the script path if your Jenkinsfile is not in the root directory of the repository.
+	Scan Repository Triggers: Configure how often Jenkins should scan the repository for new branches and changes (e.g., periodically or based on webhook triggers).
+	Save and Build:
+	Save the configuration.
+	Jenkins will automatically scan the repository and create jobs for each branch that contains a Jenkinsfile.
+	
+7. Kubernetes Cloud Configuration
+	Add Kubernetes Cloud:
+	Click on Add a new cloud and select Kubernetes.
+	Configure Kubernetes Cloud:
+
+	Name: Enter a name for the Kubernetes cloud.
+	Kubernetes URL: Enter the URL of your Kubernetes API server.
+	Kubernetes Namespace: Specify the namespace where Jenkins will create pods.
+	Credentials: Add credentials for accessing the Kubernetes API (e.g., Kubernetes service account token).
+	Jenkins URL: Enter the URL of your Jenkins instance.
+	Jenkins Tunnel: (Optional) Specify the Jenkins tunnel if required.
+	
+	Pod Templates:
+	Define pod templates that Jenkins will use to create agent pods in Kubernetes.
+	Click on Add Pod Template.
+	Name: Give your pod template a name.
+	Labels: Add labels to match jobs to this pod template.
+	Containers: Define the containers that will run in the pod.
+	Name: Name of the container.
+	Docker Image: Docker image to use for the container.
+	Command to run: (Optional) Command to run in the container.
+	Arguments to pass to the command: (Optional) Arguments for the command.
+	Working Directory: (Optional) Working directory for the container.
+	Resource Limits: (Optional) Define resource limits for the container.
+
+8.How to connect s3 through jenkins
+Step-by-Step Guide
+			1. Install the S3 Plugin
+			Log in to Jenkins:
+
+			Open your Jenkins dashboard in a web browser.
+			Install the S3 Plugin:
+			Go to "Manage Jenkins" -> "Manage Plugins".
+			Click on the "Available" tab.
+			Search for "S3 Plugin".
+			Check the box next to the S3 Plugin and click "Install without restart" or "Download now and install after restart".
+			
+			2. Configure AWS Credentials in Jenkins
+			Go to Credentials:
+
+			Navigate to "Manage Jenkins" -> "Manage Credentials".
+			Add AWS Credentials:
+
+			Select the appropriate domain (e.g., "Global").
+			Click on "Add Credentials".
+			Choose "AWS Credentials" from the "Kind" dropdown.
+			Enter your AWS Access Key ID and Secret Access Key.
+			Optionally, you can add a description to identify these credentials.
+			Click "OK" to save.
+			
+			3. Configure S3 Bucket in Jenkins Job
+			Create or Configure a Jenkins Job:
+			Go to your Jenkins dashboard.
+			Create a new job or configure an existing one.
+			Add Post-build Action:
+
+			In the job configuration page, scroll down to the "Post-build Actions" section.
+			Click on "Add post-build action".
+			Select "Publish artifacts to S3 Bucket".
+			Configure S3 Bucket Details:
+
+			Profile Name: Select the AWS credentials you added earlier.
+			Bucket Name: Enter the name of your S3 bucket.
+			Source Files: Specify the files you want to upload to S3 (e.g., **/*.jar for all JAR files).
+			Destination Bucket: Specify the destination path in the S3 bucket.
+			Storage Class: Choose the storage class (e.g., STANDARD, REDUCED_REDUNDANCY).
+			Upload from slave: Check this if you want to upload files from a Jenkins agent.
+			Save the Configuration:
+
+			Click "Save" to apply the changes.
+			Example Configuration
+			Assuming you have a job that generates a JAR file and you want to upload it to an S3 bucket named my-jenkins-bucket:
+
+			Profile Name: aws-credentials
+			Bucket Name: my-jenkins-bucket
+			Source Files: **/*.jar
+			Destination Bucket: builds/
+			Storage Class: STANDARD
+			Using AWS CLI in Jenkins Pipeline
+			Alternatively, you can use the AWS CLI to interact with S3 in a Jenkins Pipeline. This method provides more flexibility and control.
+
+			Install AWS CLI on Jenkins Master/Agent:
+
+			Follow the AWS CLI installation guide.
+			Configure AWS CLI:
+
+			Configure the AWS CLI with your credentials using aws configure.
+			Jenkins Pipeline Script:
+
+			pipeline {
+				agent any
+				environment {
+					AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
+					AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+				}
+				stages {
+					stage('Build') {
+						steps {
+							// Your build steps here
+							echo 'Building...'
+						}
+					}
+					stage('Upload to S3') {
+						steps {
+							script {
+								sh 'aws s3 cp build/my-app.jar s3://my-jenkins-bucket/builds/my-app.jar'
+							}
+						}
+					}
+				}
+			}
+
+9. 
