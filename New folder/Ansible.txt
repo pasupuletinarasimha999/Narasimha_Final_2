@@ -178,7 +178,7 @@ Specify sudo password: ansible-playbook playbook.yml -i inventory.ini --user=use
 			Inventory variables
 			Role defaults (defaults/main.yml)
 			
-15. gather_facts: gather_facts is a directive in Ansible that controls whether or not to collect facts about the remote hosts before executing tasks. Facts are system properties and environment details collected by Ansible using the setup module. These facts include information such as IP addresses, operating system details, memory, disk space, and more.
+15. gather_facts: gather_facts is a directive in Ansible that controls whether or not to collect facts about the remote hosts before executing tasks. Facts are system properties and environment details collected by Ansible using the setup module. These facts include information such as IP addresses, operating system details, memory, disk space, and more. When you run a playbook, Ansible automatically gathers facts at the beginning of the playbook run (unless gather_facts: no is specified). These facts are stored in the ansible_facts dictionary and can be accessed using Jinja2 templating syntax.
 
 16. Frequently used modules in ansible
 		1. ping
