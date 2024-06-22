@@ -200,4 +200,44 @@ Step-by-Step Guide
 				}
 			}
 
-9. 
+9. Explain the purpose of the input directive and provide an example of how to use it for manual intervention.
+The input directive in Jenkins Pipelines is used to pause the pipeline execution and wait for human input or manual intervention. This is particularly useful in scenarios where you need to get approval or perform a manual check before proceeding to the next stage of the pipeline.
+		pipeline {
+			agent any
+
+			stages {
+				stage('Build') {
+					steps {
+						echo 'Building...'
+						// Add your build steps here
+					}
+				}
+				stage('Test') {
+					steps {
+						echo 'Testing...'
+						// Add your test steps here
+					}
+				}
+				stage('Approval') {
+					steps {
+						script {
+							def userInput = input(
+								id: 'Approval', message: 'Deploy to production?', parameters: [
+									[$$class: 'BooleanParameterDefinition', defaultValue: true, description: 'Approve deployment?', name: 'approve']
+								]
+							)
+							if (!userInput.approve) {
+								error "Deployment not approved"
+							}
+						}
+					}
+				}
+				stage('Deploy') {
+					steps {
+						echo 'Deploying to production...'
+						// Add your deployment steps here
+					}
+				}
+			}
+		}
+
