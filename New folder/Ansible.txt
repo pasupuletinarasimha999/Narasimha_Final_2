@@ -693,3 +693,26 @@ Task List children is like a nested loop over families list (outer loop) and ove
 	Fourth Task:
 		Copies a file from the control_node to the web server.
 		The run_once: true directive ensures that this task runs only once, even if there are multiple hosts in the webservers group.
+		
+42. Rescue: the rescue block is part of the error handling mechanism within a playbook. It allows you to define a set of tasks that should be executed if a preceding task fails. This is useful for implementing custom error recovery logic, ensuring that your playbook can handle failures gracefully. Ansible provides a structured way to handle errors using the block, rescue, and always directives:
+
+	block: Groups a set of tasks together.
+	rescue: Defines tasks to run if any task within the block fails.
+	always: Defines tasks that should always run, regardless of whether the preceding tasks succeeded or failed.
+			- name: Example playbook with error handling
+			  hosts: all
+			  tasks:
+				- name: Main block
+				  block:
+					- name: Task that might fail
+					  command: /bin/false
+
+				  rescue:
+					- name: Task to run if the main block fails
+					  debug:
+						msg: "The main block failed, running rescue tasks."
+
+				  always:
+					- name: Task to always run
+					  debug:
+						msg: "This task runs regardless of the success or failure of the main block."
