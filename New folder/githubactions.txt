@@ -1,0 +1,672 @@
+What is GitHub Actions?
+GitHub Actions is a CI/CD (Continuous Integration and Continuous Deployment) service provided by GitHub that allows you to automate your software workflows directly in your GitHub repository.
+
+How do you create a new GitHub Actions workflow?
+You create a new workflow by adding a YAML file in the .github/workflows directory of your repository.
+
+What is a workflow in GitHub Actions?
+A workflow is an automated process that you define in your GitHub repository. It is made up of one or more jobs that can be triggered by events.
+    Events: These are triggers that start the workflow. Common events include:
+        push: Triggered when code is pushed to the repository.
+        pull_request: Triggered when a pull request is opened, synchronized, or reopened.
+        schedule: Triggered at scheduled times using cron syntax.
+        workflow_dispatch: Manually triggered by a user.
+
+In single github action pipeline with approval inbetween two jobs?
+    To implement an approval step between two jobs in a GitHub Actions pipeline, you can use the workflow_run event in combination with manual approval via GitHub's environment protection rules. 
+            Step 1: Define the First Workflow
+            This workflow will run the initial jobs and then trigger the second workflow upon completion.
+            # .github/workflows/first-workflow.yml
+            name: Initial Jobs
+            on:
+            push:
+                branches:
+                - main
+
+            jobs:
+            build:
+                runs-on: ubuntu-latest
+
+                steps:
+                - name: Checkout code
+                    uses: actions/checkout@v2
+
+                - name: Set up Node.js
+                    uses: actions/setup-node@v2
+                    with:
+                    node-version: '14'
+
+                - name: Install dependencies
+                    run: npm install
+
+                - name: Build project
+                    run: npm run build
+
+            test:
+                runs-on: ubuntu-latest
+                needs: build
+
+                steps:
+                - name: Checkout code
+                    uses: actions/checkout@v2
+
+                - name: Set up Node.js
+                    uses: actions/setup-node@v2
+                    with:
+                    node-version: '14'
+
+                - name: Install dependencies
+                    run: npm install
+
+                - name: Run tests
+                    run: npm test
+            Step 2: Define the Second Workflow
+            This workflow will be triggered by the completion of the first workflow and will include a manual approval step.
+            # .github/workflows/second-workflow.yml
+            name: Approval and Deployment
+
+            on:
+            workflow_run:
+                workflows: ["Initial Jobs"]
+                types:
+                - completed
+
+            jobs:
+            approval:
+                runs-on: ubuntu-latest
+                steps:
+                - name: Awaiting approval
+                    run: echo "Please approve this job in the GitHub UI."
+
+            deploy:
+                runs-on: ubuntu-latest
+                needs: approval
+
+                steps:
+                - name: Checkout code
+                    uses: actions/checkout@v2
+
+                - name: Set up Node.js
+                    uses: actions/setup-node@v2
+                    with:
+                    node-version: '14'
+
+                - name: Install dependencies
+                    run: npm install
+
+                - name: Deploy application
+                    run: npm run deploy
+
+
+What is a job in GitHub Actions?
+A job is a set of steps that execute on the same runner. Jobs can run in parallel or sequentially.
+
+What is a runner in GitHub Actions?
+A runner is a server that runs your workflows when they are triggered. GitHub provides hosted runners, but you can also use self-hosted runners.
+
+How to configure self-hosted runners in github?
+Navigate to Your Repository: Go to the repository where you want to add the self-hosted runner.
+    Settings: Click on the "Settings" tab.
+    Actions: In the left sidebar, click on "Actions".
+    Runners: Scroll down to the "Self-hosted runners" section and click on "Add runner".
+    Choose OS: Select the operating system of your self-hosted runner (e.g., Linux, macOS, Windows).
+    
+    Follow Instructions: Follow the on-screen instructions to download and configure the runner application. The instructions typically include:
+    Downloading the runner application.
+    Extracting the downloaded file.
+    Configuring the runner with a registration token.
+    Running the runner application.
+
+    Example Instructions for a Linux Runner
+    # Create a folder
+    mkdir actions-runner && cd actions-runner
+
+    # Download the latest runner package
+    curl -o actions-runner-linux-x64-2.285.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.285.0/actions-runner-linux-x64-2.285.0.tar.gz
+
+    # Extract the installer
+    tar xzf ./actions-runner-linux-x64-2.285.0.tar.gz
+
+    # Configure the runner
+    ./config.sh --url https://github.com/your-repo-owner/your-repo-name --token YOUR_REGISTRATION_TOKEN
+
+    # Run the runner
+    ./run.sh
+
+
+parallel job execution in github actions?
+        Here is an example of a GitHub Actions workflow that runs three jobs (build, test, and lint) in parallel:
+
+        name: CI Pipeline
+        on:
+        push:
+            branches:
+            - main
+        jobs:
+        build:
+            runs-on: ubuntu-latest
+            steps:
+            - name: Checkout code
+                uses: actions/checkout@v2
+
+            - name: Set up Node.js
+                uses: actions/setup-node@v2
+                with:
+                node-version: '14'
+
+            - name: Install dependencies
+                run: npm install
+
+            - name: Build project
+                run: npm run build
+
+        test:
+            runs-on: ubuntu-latest
+
+            steps:
+            - name: Checkout code
+                uses: actions/checkout@v2
+
+            - name: Set up Node.js
+                uses: actions/setup-node@v2
+                with:
+                node-version: '14'
+
+            - name: Install dependencies
+                run: npm install
+
+            - name: Run tests
+                run: npm test
+
+        lint:
+            runs-on: ubuntu-latest
+
+            steps:
+            - name: Checkout code
+                uses: actions/checkout@v2
+
+            - name: Set up Node.js
+                uses: actions/setup-node@v2
+                with:
+                node-version: '14'
+
+            - name: Install dependencies
+                run: npm install
+
+            - name: Run linter
+                run: npm run lint
+
+        In this example, the build, test, and lint jobs will run in parallel because there are no dependencies specified between them. Each job will be executed on a separate runner, allowing them to run concurrently.
+
+        Adding Dependencies
+        If you want to add dependencies between jobs, you can use the needs keyword. For example, if you want the test and lint jobs to run only after the build job completes, you can modify the workflow as follows:
+
+        name: CI Pipeline
+        on:
+        push:
+            branches:
+            - main
+        jobs:
+        build:
+            runs-on: ubuntu-latest
+
+            steps:
+            - name: Checkout code
+                uses: actions/checkout@v2
+
+            - name: Set up Node.js
+                uses: actions/setup-node@v2
+                with:
+                node-version: '14'
+
+            - name: Install dependencies
+                run: npm install
+
+            - name: Build project
+                run: npm run build
+
+        test:
+            runs-on: ubuntu-latest
+            needs: build  # This job depends on the 'build' job
+
+            steps:
+            - name: Checkout code
+                uses: actions/checkout@v2
+
+            - name: Set up Node.js
+                uses: actions/setup-node@v2
+                with:
+                node-version: '14'
+
+            - name: Install dependencies
+                run: npm install
+
+            - name: Run tests
+                run: npm test
+
+        lint:
+            runs-on: ubuntu-latest
+            needs: build  # This job depends on the 'build' job
+
+            steps:
+            - name: Checkout code
+                uses: actions/checkout@v2
+
+            - name: Set up Node.js
+                uses: actions/setup-node@v2
+                with:
+                node-version: '14'
+
+            - name: Install dependencies
+                run: npm install
+
+            - name: Run linter
+                run: npm run lint
+
+What is a step in GitHub Actions?
+A step is an individual task that is part of a job. Steps can run commands, use actions, or set up the environment.
+
+What is an action in GitHub Actions?
+An action is a custom application for the GitHub Actions platform that performs a complex but frequently repeated task.
+
+How do you trigger a workflow?
+Workflows can be triggered by events such as push, pull request, or on a schedule.
+
+What is the syntax for defining a workflow?
+Workflows are defined using YAML syntax.
+
+How do you specify the operating system for a job?
+You specify the operating system using the runs-on key in the job definition.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+
+How do you pass data between jobs in a workflow?
+You can pass data between jobs using artifacts or environment variables.
+
+What are matrix builds in GitHub Actions?
+Matrix builds allow you to run multiple job configurations in parallel, such as testing against multiple versions of a language or operating system.
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10, 12, 14]
+    steps:
+      - name: Use Node.js $${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: $${{ matrix.node-version }}
+
+How do you use secrets in GitHub Actions?
+Secrets are stored in the repository settings and can be accessed in workflows using the secrets context.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use secret
+        run: echo $${{ secrets.MY_SECRET }}
+
+What is the GITHUB_TOKEN secret?
+GITHUB_TOKEN is a special token automatically generated by GitHub Actions that you can use to authenticate on behalf of GitHub Actions.
+
+How do you cache dependencies in GitHub Actions?
+You can cache dependencies using the actions/cache action.
+steps:
+  - uses: actions/cache@v2
+    with:
+      path: ~/.npm
+      key: $${{ runner.os }}-node-$${{ hashFiles('**/package-lock.json') }}
+      restore-keys: |
+        $${{ runner.os }}-node-
+
+How do you define environment variables in a workflow?
+Environment variables can be defined at the workflow, job, or step level using the env key.
+env:
+  GLOBAL_VAR: value
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    env:
+      JOB_VAR: value
+    steps:
+      - name: Example step
+        run: echo $${{ env.GLOBAL_VAR }} $${{ env.JOB_VAR }}
+
+What is the purpose of the needs keyword in GitHub Actions?
+The needs keyword specifies dependencies between jobs, ensuring that a job runs only after its dependencies have completed successfully.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Building"
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - run: echo "Testing"
+
+How do you run a workflow on a schedule?
+You can use the schedule event with a cron syntax to run workflows on a schedule.
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+How do you use a custom Docker container in a job?
+You can specify a custom Docker container using the container key in the job definition.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    container:
+      image: node:14
+    steps:
+      - run: node -v
+
+What is the if keyword used for in GitHub Actions?
+The if keyword is used to conditionally run jobs or steps based on expressions.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "This runs only on the main branch"
+        if: github.ref == 'refs/heads/main'
+
+How do you create a reusable workflow?
+Reusable workflows can be defined in a separate repository and referenced using the uses keyword.
+jobs:
+  example-job:
+    uses: owner/repo/.github/workflows/workflow.yml@main
+
+How do you debug a failing workflow?
+You can enable debug logging by setting the ACTIONS_RUNNER_DEBUG and ACTIONS_STEP_DEBUG secrets to true.
+
+What are composite actions in GitHub Actions?
+Composite actions allow you to combine multiple steps into a single action, making it reusable across workflows.
+name: "My Composite Action"
+description: "A composite action example"
+runs:
+  using: "composite"
+  steps:
+    - run: echo "Hello from the composite action"
+
+How do you handle workflow concurrency?
+You can use the concurrency key to control the number of concurrent workflow runs.
+concurrency:
+  group: $${{ github.ref }}
+  cancel-in-progress: true
+
+What is the continue-on-error keyword used for?
+The continue-on-error keyword allows a job or step to continue even if it fails.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 1
+        continue-on-error: true
+
+How do you use GitHub Actions for deployment?
+You can use deployment actions like actions/deploy or custom scripts to deploy your application.
+
+What is the jobs.<job_id>.outputs key used for?
+The outputs key allows you to define outputs from a job that can be used in subsequent jobs.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      build_id: $${{ steps.build.outputs.id }}
+    steps:
+      - id: build
+        run: echo "::set-output name=id::123"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - run: echo "Deploying build $${{ needs.build.outputs.build_id }}"
+
+How do you use GitHub Actions for code quality checks?
+You can integrate tools like ESLint, Prettier, or custom scripts to perform code quality checks in your workflow.
+
+What is the jobs.<job_id>.services key used for?
+The services key allows you to define services like databases that are required for your job.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+    steps:
+      - run: echo "Using PostgreSQL service"
+
+How do you use GitHub Actions for performance testing?
+You can integrate performance testing tools like JMeter or custom scripts to perform performance tests in your workflow.
+
+What is the jobs.<job_id>.strategy.fail-fast key used for?
+The fail-fast key allows you to stop all in-progress jobs in a matrix build if any job fails.
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [10, 12, 14]
+    steps:
+      - name: Use Node.js $${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: $${{ matrix.node-version }}
+
+How do you use GitHub Actions for monitoring?
+You can integrate monitoring tools like Prometheus or custom scripts to monitor your workflows and applications.
+
+What is the jobs.<job_id>.timeout-minutes key used for?
+The timeout-minutes key allows you to set a timeout for a job, after which it will be automatically canceled.
+yaml
+Copy Code
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: sleep 600
+
+How do you use GitHub Actions for database migrations?
+You can integrate database migration tools like Flyway or custom scripts to perform database migrations in your workflow.
+
+What is the jobs.<job_id>.if key used for?
+The if key allows you to conditionally run a job based on expressions.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - run: echo "This job runs only on the main branch"
+
+How do you use GitHub Actions for API testing?
+You can integrate API testing tools like Postman or custom scripts to perform API tests in your workflow.
+
+What is the jobs.<job_id>.container.options key used for?
+The container.options key allows you to specify additional Docker run options for the container.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    container:
+      image: node:14
+      options: --cpus 2
+    steps:
+      - run: node -v
+
+How do you use GitHub Actions for mobile app testing?
+You can integrate mobile app testing tools like Appium or custom scripts to perform mobile app tests in your workflow.
+
+What is the jobs.<job_id>.steps[*].with key used for?
+The with key allows you to pass inputs to an action.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+How do you use GitHub Actions for containerized applications?
+You can build, test, and deploy containerized applications using Docker and GitHub Actions.
+
+What is the jobs.<job_id>.steps[*].env key used for?
+The env key allows you to set environment variables for a specific step.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo $$MY_VAR
+        env:
+          MY_VAR: value
+
+How do you use GitHub Actions for serverless applications?
+You can deploy serverless applications using tools like AWS SAM, Serverless Framework, or custom scripts.
+
+What is the jobs.<job_id>.steps[*].id key used for?
+The id key allows you to assign an identifier to a step, which can be used to reference the step's outputs.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - id: example-step
+        run: echo "::set-output name=example::value"
+      - run: echo $${{ steps.example-step.outputs.example }}
+
+How do you use GitHub Actions for multi-cloud deployments?
+You can deploy to multiple cloud providers using their respective CLI tools or APIs in your workflow.
+
+What is the jobs.<job_id>.steps[*].name key used for?
+The name key allows you to assign a name to a step, which is useful for readability and debugging.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Example Step
+        run: echo "This is an example step"
+
+How do you use GitHub Actions for blue-green deployments?
+You can implement blue-green deployments using deployment strategies and tools like Kubernetes or custom scripts.
+
+What is the jobs.<job_id>.steps[*].run key used for?
+The run key allows you to execute a command in a step.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello, World!"
+
+How do you use GitHub Actions for canary deployments?
+You can implement canary deployments using deployment strategies and tools like Kubernetes or custom scripts.
+
+What is the jobs.<job_id>.steps[*].uses key used for?
+The uses key allows you to use an action defined in a repository.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+How do you use GitHub Actions for feature flagging?
+You can integrate feature flagging tools like LaunchDarkly or custom scripts to manage feature flags in your workflow.
+
+What is the jobs.<job_id>.steps[*].continue-on-error key used for?
+The continue-on-error key allows a step to continue even if it fails.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 1
+        continue-on-error: true
+
+How do you use GitHub Actions for A/B testing?
+You can implement A/B testing using deployment strategies and tools like Kubernetes or custom scripts.
+
+What is the jobs.<job_id>.steps[*].timeout-minutes key used for?
+The timeout-minutes key allows you to set a timeout for a step, after which it will be automatically canceled.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sleep 600
+        timeout-minutes: 10
+
+How do you use GitHub Actions for infrastructure as code (IaC)?
+You can use tools like Terraform, CloudFormation, or custom scripts to manage infrastructure as code in your workflow.
+
+What is the jobs.<job_id>.steps[*].if key used for?
+The if key allows you to conditionally run a step based on expressions.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "This step runs only on the main branch"
+        if: github.ref == 'refs/heads/main'
+
+How do you use GitHub Actions for configuration management?
+You can use tools like Ansible, Chef, Puppet, or custom scripts to manage configuration in your workflow.
+
+What is the jobs.<job_id>.steps[*].with key used for?
+The with key allows you to pass inputs to an action.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+How do you use GitHub Actions for compliance checks?
+You can integrate compliance tools or custom scripts to perform compliance checks in your workflow.
+
+What is the jobs.<job_id>.steps[*].env key used for?
+The env key allows you to set environment variables for a specific step.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo $$MY_VAR
+        env:
+          MY_VAR: value
+
+How do you use GitHub Actions for disaster recovery?
+You can implement disaster recovery strategies using backup tools and custom scripts in your workflow.
+
+What is the jobs.<job_id>.steps[*].id key used for?
+The id key allows you to assign an identifier to a step, which can be used to reference the step's outputs.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - id: example-step
+        run: echo "::set-output name=example::value"
+      - run: echo ${{ steps.example-step.outputs.example }}
+
+How do you use GitHub Actions for incident management?
+You can integrate incident management tools or custom scripts to handle incidents in your workflow.
+
+What is the jobs.<job_id>.steps[*].name key used for?
+The name key allows you to assign a name to a step, which is useful for readability and debugging.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Example Step
+        run: echo "This is an example step"
+
+How do you use GitHub Actions for log management?
+You can integrate log management tools or custom scripts to manage logs in your workflow.
+
+What is the jobs.<job_id>.steps[*].run key used for?
+The run key allows you to execute a command in a step.
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello, World!"
