@@ -1,0 +1,400 @@
+What is Maven?
+Maven is a build automation tool used primarily for Java projects. It helps manage project dependencies, build processes, and documentation.
+
+What is a POM file in Maven?
+POM stands for Project Object Model. It is an XML file that contains information about the project and configuration details used by Maven to build the project.
+
+What is a Maven repository?
+A Maven repository is a directory where all the project jars, library jars, plugins, and other project-specific artifacts are stored and can be accessed by Maven.
+    Project JARs: Your own project's output (JAR or WAR)
+    Library JARs: Reusable code from third parties. (dependencies in POM like com.google.code.gson)
+    Plugins: Extend the functionality of a host application or framework. (maven plugin)
+
+What are the types of Maven repositories?
+Local, Central, and Remote repositories.
+
+What is the local repository in Maven?
+The local repository is a directory on the developer's machine where Maven stores all the project artifacts. By default, the local repository is located in the .m2/repository. it is a directory on your local machine where Maven stores all the project dependencies, plugins, and other artifacts
+
+What is the central repository in Maven?
+The central repository is a repository provided by the Maven community, which contains a large number of commonly used libraries and plugins. The URL for the Maven Central Repository is https://repo.maven.apache.org/maven2.If a dependency is not found in the local repository, Maven will attempt to download it from the Central Repository.
+
+What is a remote repository in Maven?
+A remote repository is any repository other than the central repository, which can be accessed over a network. It provide a way for organizations to host their own private artifacts and dependencies. They can be configured in the pom.xml or settings.xml files.
+
+how to authenticate with private remote repository in maven
+To authenticate with a private remote repository in Maven, you need to configure your Maven settings to include the necessary credentials. This is typically done in the settings.xml file, which is located in the Maven configuration directory (usually ~/.m2/settings.xml)
+    1. Add the Repository to Your pom.xml
+    First, you need to define the private remote repository in your project's pom.xml file.
+            <project>
+                ...
+                <repositories>
+                    <repository>
+                        <id>my-private-repo</id>
+                        <url>https://repo.mycompany.com/maven2</url>
+                    </repository>
+                </repositories>
+                ...
+            </project>
+    2. Configure Credentials in settings.xml
+    Next, you need to add the credentials for the private repository in the settings.xml file.
+    <settings>
+        ...
+        <servers>
+            <server>
+                <id>my-private-repo</id>
+                <username>your-username</username>
+                <password>your-password</password>
+            </server>
+        </servers>
+        ...
+    </settings>
+    3. Secure Your Credentials
+        Generate a Master Password:
+        mvn --encrypt-master-password
+        This command will prompt you to enter a master password and will output an encrypted version of it. Add this encrypted master password to your settings-security.xml file, which should be located in the same directory as settings.xml.
+
+        <settingsSecurity>
+            <master>{encrypted-master-password}</master>
+        </settingsSecurity>
+
+        Encrypt Your Repository Password:
+        mvn --encrypt-password your-password
+        This command will output an encrypted version of your repository password. Use this encrypted password in your settings.xml.
+        <settings>
+            ...
+            <servers>
+                <server>
+                    <id>my-private-repo</id>
+                    <username>your-username</username>
+                    <password>{encrypted-password}</password>
+                </server>
+            </servers>
+            ...
+        </settings>
+Storing plain text passwords in settings.xml is not secure. Maven provides a way to encrypt passwords using the maven-settings-plugin.
+
+How do you create a new Maven project?
+Use the command: mvn archetype:generate
+
+What is an archetype in Maven?
+An archetype is a template for generating a new project in Maven.
+
+What is the purpose of the dependency element in POM?
+It is used to specify the dependencies required by the project.
+
+What is the groupId in Maven?
+It uniquely identifies the project group.
+
+What is the artifactId in Maven?
+It uniquely identifies the project within the group.
+
+What is the version in Maven?
+It specifies the version of the project.
+
+What is the scope of a dependency in Maven?
+It defines the classpath for a dependency. Common scopes are compile, provided, runtime, test, and system. BY default scope is compile
+
+    Consider a Maven project with the following dependencies:
+    <dependencies>
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.12.0</version>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>4.0.1</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>8.0.26</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+
+    Compilation Classpath: Includes commons-lang3 (compile), javax.servlet-api (provided), and any system-scoped dependencies.
+    Runtime Classpath: Includes commons-lang3 (compile) and mysql-connector-java (runtime).
+    Test Classpath: Includes commons-lang3 (compile), javax.servlet-api (provided), mysql-connector-java (runtime), and junit (test).
+
+    Scope	Compilation Classpath	Runtime Classpath	Test Classpath
+    compile	          Yes	               Yes	            Yes
+    provided	      Yes	               No	            Yes
+    runtime	          No	               Yes	            Yes
+    test	          No	               No	            Yes
+    system	          Yes                  Yes            	Yes
+
+What is the packaging element in POM?
+It specifies the packaging type of the project, such as jar, war, pom, etc.
+
+What is the build element in POM?
+It contains information about the build process, such as plugins and resources.
+
+What is a Maven plugin?
+A plugin is a collection of goals that can be executed during the build process (Clean Plugin, Compiler Plugin, Install Plugin etc)
+
+How do you add a plugin to a Maven project?
+Add the plugin configuration to the build section of the POM file.
+    <project>
+        <!-- ... -->
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.example</groupId>
+                    <artifactId>my-maven-plugin</artifactId>
+                    <version>1.0</version>
+                    <!-- Optional configuration -->
+                    <configuration>
+                        <param1>value1</param1>
+                        <!-- ... -->
+                    </configuration>
+                </plugin>
+            </plugins>
+        </build>
+        <!-- ... -->
+    </project>
+If the plugin is not available in the central Maven repository, you can install it manually using the following command:
+    mvn install:install-file -Dfile=/path/to/plugin.jar -DgroupId=org.example -DartifactId=my-maven-plugin -Dversion=1.0 -Dpackaging=jar
+
+what is the clean lifecycle in Maven?
+It handles project cleaning, such as removing the target directory.
+    validate: Ensures the project is correct and has necessary information.
+    compile: Compiles the source code.
+    test: Runs unit tests.
+    package: Packages the compiled code (e.g., creates a JAR). Stores the jar in target directory
+    verify: Validates integration test results.
+    install: Installs the package in the local repository. Stores the jar in /m2/repositry
+    deploy: Copies the package to a remote repository.
+
+What is the site lifecycle in Maven?
+It handles the creation of the project's site documentation.
+
+What is a Maven profile?
+A profile is a set of configuration values that can be used to customize the build process for different environments.
+
+How do you activate a Maven profile?
+Profiles can be activated via the command line, settings.xml, or POM file.
+
+What is the dependencyManagement element in POM?
+It is used to manage dependency versions in multi-module projects.
+
+What is the parent element in POM?
+It is used to inherit configuration from another POM file.
+
+What is a multi-module project in Maven?
+A project that is composed of multiple sub-projects or modules.
+
+How do you create a multi-module project in Maven?
+Define a parent POM and add module definitions.
+
+What is the repositories element in POM?
+It specifies remote repositories to be used by Maven.
+
+What is the pluginRepositories element in POM?
+It specifies remote repositories for plugins.
+
+
+How do you exclude a transitive dependency in Maven?
+Use the <exclusions> element within the <dependency> element.
+
+What is the dependency:tree goal in Maven?
+It prints the dependency tree for the project.
+
+How do you create a custom Maven plugin?
+Create a Maven project with the maven-plugin packaging type and implement the Mojo interface.
+
+What is the maven-assembly-plugin?
+It is used to create distributions of the project, such as ZIP or TAR files.
+
+What is the maven-shade-plugin?
+It is used to create an uber-jar, which includes all dependencies.
+
+What is the maven-surefire-plugin?
+It is used to run unit tests during the build process.
+
+What is the maven-failsafe-plugin?
+It is used to run integration tests.
+
+What is the maven-dependency-plugin?
+It provides goals for managing project dependencies.
+
+What is the maven-release-plugin?
+It is used to automate the release process.
+
+What is the maven-enforcer-plugin?
+It is used to enforce rules on the project, such as dependency convergence.
+
+How do you handle version conflicts in Maven?
+Use the dependencyManagement section or specify the version explicitly in the dependencies section.
+
+What is the effective-pom in Maven?
+It is the final POM that Maven uses after merging all configurations.
+
+How do you generate the effective-pom?
+Use the command: mvn help:effective-pom
+
+What is the maven-antrun-plugin?
+It allows you to run Ant tasks within a Maven build.
+
+How do you configure a proxy in Maven?
+Configure the proxy settings in the settings.xml file.
+
+What is the maven-compiler-plugin?
+It is used to compile the project's source code.
+
+How do you change the Java version for a Maven project?
+Configure the maven-compiler-plugin with the desired source and target versions.
+
+What is the maven-war-plugin?
+It is used to build WAR files for web applications.
+
+What is the maven-jar-plugin?
+It is used to build JAR files.
+
+What is the maven-eclipse-plugin?
+It is used to generate Eclipse project files.
+
+How do you skip tests in Maven?
+Use the -DskipTests or -Dmaven.test.skip=true command-line options.
+
+What is the maven-deploy-plugin?
+It is used to deploy the built artifacts to a remote repository.
+
+How do you configure a custom repository in Maven?
+Add the repository configuration to the repositories section in the POM file or settings.xml.
+
+What is the maven-invoker-plugin?
+It is used to run Maven builds in a separate process.
+
+How do you create a BOM (Bill of Materials) in Maven?
+Create a POM file with the pom packaging type and list the dependencies in the dependencyManagement section.
+
+How do you configure a multi-module project with different Java versions?
+Configure the maven-compiler-plugin in each module's POM file with the desired Java version.
+        <properties>
+            <maven.compiler.target>1.8</maven.compiler.target>
+            <maven.compiler.source>1.8</maven.compiler.source>
+        </properties>
+
+How do you handle cyclic dependencies in Maven?
+Refactor the code to remove cyclic dependencies or use dependency exclusions.
+
+What is the maven-assembly-plugin descriptor?
+It is an XML file that defines the structure and contents of the assembly.
+
+How do you create a custom lifecycle in Maven?
+Define a new lifecycle in a custom plugin and bind goals to the lifecycle phases.
+  Step 1: Create a Custom Maven Plugin
+        First, you need to create a Maven plugin project. You can do this using the Maven Archetype
+
+        mvn archetype:generate -DgroupId=com.example -DartifactId=custom-lifecycle-plugin -DarchetypeArtifactId=maven-archetype-plugin
+  Step 2: Define the Custom Lifecycle in the Plugin
+        In your custom plugin, you need to define the custom lifecycle and its phases. This is done in the META-INF/plexus/components.xml file. Here’s an example:
+        <component-set>
+        <components>
+            <component>
+            <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
+            <role-hint>custom</role-hint>
+            <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
+            <configuration>
+                <lifecycles>
+                <lifecycle>
+                    <id>custom</id>
+                    <phases>
+                    <validate>validate</validate>
+                    <initialize>initialize</initialize>
+                    <custom-phase>com.example:custom-lifecycle-plugin:custom-goal</custom-phase>
+                    <package>package</package>
+                    <install>install</install>
+                    <deploy>deploy</deploy>
+                    </phases>
+                </lifecycle>
+                </lifecycles>
+            </configuration>
+            </component>
+        </components>
+        </component-set>
+  Step 3: Implement the Custom Goal
+        Next, implement the custom goal in your plugin. This involves creating a Java class that extends AbstractMojo and annotating it with @Mojo. Here’s an example:
+
+        package com.example;
+
+        import org.apache.maven.plugin.AbstractMojo;
+        import org.apache.maven.plugin.MojoExecutionException;
+        import org.apache.maven.plugins.annotations.Mojo;
+
+        @Mojo(name = "custom-goal")
+        public class CustomGoalMojo extends AbstractMojo {
+            public void execute() throws MojoExecutionException {
+                getLog().info("Executing custom goal...");
+                // Custom logic here
+            }
+        }
+    Step 4: Build and Install the Plugin
+        Build and install your custom plugin to your local Maven repository:
+        mvn clean install
+    Step 5: Use the Custom Lifecycle in a Maven Project
+        Finally, use the custom lifecycle in a Maven project by specifying the custom lifecycle in the pom.
+        <project xmlns="http://maven.apache.org/POM/4.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>com.example</groupId>
+            <artifactId>custom-lifecycle-project</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <packaging>jar</packaging>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.example</groupId>
+                        <artifactId>custom-lifecycle-plugin</artifactId>
+                        <version>1.0-SNAPSHOT</version>
+                        <extensions>true</extensions>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <profiles>
+                <profile>
+                    <id>custom</id>
+                    <build>
+                        <defaultGoal>custom</defaultGoal>
+                    </build>
+                </profile>
+            </profiles>
+        </project>
+        Now, when you run the custom lifecycle profile, Maven will execute the custom lifecycle phases and 
+        mvn clean install -Pcustom
+
+
+What is the maven-scm-plugin?
+It is used to interact with the source control management system.
+
+How do you configure Maven to use a specific JDK?
+Set the JAVA_HOME environment variable or configure the toolchains.xml file.
+
+What is the maven-toolchains-plugin?
+It is used to configure and select different toolchains, such as JDKs, for the build process.
+
+How do you manage large dependency trees in Maven?
+Use the dependencyManagement section and BOMs to centralize dependency versions.
+
+What is the maven-invoker-plugin used for?
+It is used to run integration tests that involve executing Maven builds.
+
+How do you create a custom archetype in Maven?
+Create a project template and package it as an archetype using the maven-archetype-plugin.
+
+What is the maven-gpg-plugin?
+It is used to sign artifacts with GPG keys.
