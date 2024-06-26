@@ -1,0 +1,26 @@
+helm deployment in argocd
+===========================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-app
+  namespace: argocd
+spec:
+  sources:
+    - repoURL: 'https://github.com/org/values-repo.git'
+      targetRevision: branch1
+      ref: valuesRepo
+      helm:
+        releaseName: sample-release
+    - repoURL: 'https://github.com/org/helm-chart.git' 
+      path: path_to_your_helm_chart
+      targetRevision: git-branch-name
+      helm:
+        releaseName: sample-release
+        valueFiles:
+          - $valuesRepo/helm-values/development/sample-values.yaml
+  destination:
+    name: 'dev-cluster'
+    namespace: 'test-ns'
+  project: test-project
+=========================================================================

@@ -24,7 +24,7 @@ RUN pip install -r requirements.txt
 USER myuser
 
 # Define the default command (can be overridden)
-CMD ["python", "main.py"]
+CMD ["catalina.sh", "run"]
 
 # Inform about copying source code later
 ONBUILD COPY . .
@@ -42,3 +42,9 @@ RUN yarn install
 
 # Define the default command
 CMD ["yarn", "start"]
+
+
+
+
+ENTRYPOINT: Specifies the main command to be run when the container starts. It's meant to be the primary executable of the container.
+CMD: Provides default arguments for the ENTRYPOINT or specifies the entire command if ENTRYPOINT is not set.

@@ -204,3 +204,78 @@ name: myplugin
 usage: "helm myplugin <command>"
 description: "A sample Helm plugin for demonstration purposes."
 command: "./script.sh"  # Replace with actual script path if applicable
+
+
+multiple values.yaml files for Helm
+=====================================
+Using Multiple --values or -f Flags: 
+                helm install my-release my-chart -f values1.yaml -f values2.yaml
+Using the --set Flag:
+                helm install my-release my-chart --set key1=value1 --set key2=value2
+Combining --values and --set:
+                helm install my-release my-chart -f values1.yaml -f values2.yaml --set key1=value1
+Example Workflow
+  # values.yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: stable
+service:
+  type: ClusterIP
+  port: 80
+
+# values-dev.yaml
+replicaCount: 2
+service:
+  type: NodePort
+
+# values-overrides.yaml
+image:
+  tag: latest
+
+Merged Result:
+replicaCount: 2
+image:
+  repository: nginx
+  tag: latest
+service:
+  type: NodePort
+  port: 80
+
+Helm structure
+==============
+mychart/
+  ├── Chart.yaml -> metadata about the chart, such as its name, version, and description.
+  ├── values.yaml -> default configuration values for the chart
+  ├── charts/ -> This directory is used to store chart dependencies. If your chart depends on other charts, they can be placed here as .tgz files or specified in the Chart.yaml file.
+  ├── templates/ -> directory contains Kubernetes resource templates
+  │   ├── _helpers.tpl
+  │   ├── deployment.yaml
+  │   ├── service.yaml
+  │   └── ...
+  ├── crds/ -> This directory is used to store Custom Resource Definitions (CRDs). CRDs define custom resources that extend the Kubernetes API
+  ├── templates/
+  ├── .helmignore
+  └── README.md
+
+multiple charts in a single helm package
+========================================
+To include multiple charts in a single Helm package, you can define them as dependencies in the Chart.yaml file of the parent chart.
+1. Create the Parent Chart:  helm create parent-chart
+2. Define Dependencies in Chart.yaml: 
+        # parent-chart/Chart.yaml
+          apiVersion: v2
+          name: parent-chart
+          version: 0.1.0
+          dependencies:
+            - name: child-chart-1
+              version: 1.0.0
+              repository: "https://example.com/charts"
+            - name: child-chart-2
+              version: 1.0.0
+              repository: "https://example.com/charts"
+
+3. Update Dependencies: helm dependency update parent-chart
+4. Install the Parent Chart: helm install my-release parent-chart
+
+

@@ -189,26 +189,10 @@ What is the dependencyManagement element in POM?
 It is used to manage dependency versions in multi-module projects.
 
 What is the parent element in POM?
-It is used to inherit configuration from another POM file. In Maven, the <parent> element in a pom.xml file is used to specify that a project should inherit configuration from another project, known as the parent project.
+It is used to inherit configuration from another POM file.
 
 What is a multi-module project in Maven?
-A project that is composed of multiple sub-projects or modules. A multi-module project typically consists of a parent POM and several child modules. The parent POM defines the overall structure and common configurations, while each module has its own POM file that defines its specific configurations.
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <groupId>com.example</groupId>
-    <artifactId>my-multi-module-project</artifactId>
-    <version>1.0.0</version>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>module1</module>
-        <module>module2</module>
-        <module>module3</module>
-    </modules>
-
+A project that is composed of multiple sub-projects or modules.
 
 How do you create a multi-module project in Maven?
 Define a parent POM and add module definitions.
@@ -221,10 +205,10 @@ It specifies remote repositories for plugins.
 
 
 How do you exclude a transitive dependency in Maven?
-Use the <exclusions> element within the <dependency> element. A transitive dependency in Maven is a dependency that is not directly included in your project but is included as a dependency of another dependency. In other words, if your project depends on library A, and library A depends on library B, then library B is a transitive dependency of your project
+Use the <exclusions> element within the <dependency> element.
 
 What is the dependency:tree goal in Maven?
-It prints the dependency tree for the project (mvn dependency:tree)
+It prints the dependency tree for the project.
 
 How do you create a custom Maven plugin?
 Create a Maven project with the maven-plugin packaging type and implement the Mojo interface.
@@ -249,41 +233,9 @@ It is used to automate the release process.
 
 What is the maven-enforcer-plugin?
 It is used to enforce rules on the project, such as dependency convergence.
-<build>
-    <plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-enforcer-plugin</artifactId>
-            <version>3.0.0</version>
-            <executions>
-                <execution>
-                    <id>enforce-dependency-versions</id>
-                    <goals>
-                        <goal>enforce</goal>
-                    </goals>
-                    <configuration>
-                        <rules>
-                            <dependencyConvergence />
-                        </rules>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-</build>
 
 How do you handle version conflicts in Maven?
 Use the dependencyManagement section or specify the version explicitly in the dependencies section.
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>com.example</groupId>
-            <artifactId>example-library</artifactId>
-            <version>1.2.3</version>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-
 
 What is the effective-pom in Maven?
 It is the final POM that Maven uses after merging all configurations.

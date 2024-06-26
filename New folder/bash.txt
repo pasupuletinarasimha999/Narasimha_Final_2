@@ -1,0 +1,117 @@
+1. Substitute text: sed 's/oldtext/newtext/' file.txt
+2. Delete lines containing a pattern: sed '/pattern/d' file.txt
+3. Insert a line before a match: sed '/pattern/i\New line of text' file.txt
+4. Print specific columns: awk '{print $$1, $$3}' file.txt
+5. Sum a column of numbers: awk '{sum += $$2} END {print sum}' file.txt
+6. Conditional processing: awk '$$3 > 50 {print $$1, $$3}' file.txt ->This prints the first and third columns only for lines where the third column is greater than 50.
+7. Pipe (|) -> grep 'pattern' file.txt | awk '{print $$1, $$3}'
+8. Sort and count unique lines: sort file.txt | uniq -c
+9. grep: Search for patterns in files -> grep 'pattern' file.txt
+10. sort: Sort lines of text files -> sort file.txt
+11. cut: Remove sections from each line of files -> cut -d',' -f1,3 file.csv
+12.Redirect standard output to a file, overwriting the file if it exist -> echo "Hello, World!" > output.txt
+13. Redirect standard output to a file, appending to the file if it exists -> echo "Hello, again!" >> output.txt
+14. Redirect standard input from a file -> sort < input.txt
+15. Redirect standard error to a file. -> ls non_existent_file 2> error.log
+16. Redirect standard error to a file, appending to the file if it exists.-> ls non_existent_file 2>> error.log
+17. Redirect both standard output and standard error to a file. -> command &> output.log
+18. Redirect both standard output and standard error to a file, appending to the file if it exists. -> command &>> output.log
+19. Run a command in the background -> long_running_command &
+20. Redirect multiple lines of input to a command. -> 
+        cat <<EOF
+        Line 1
+        Line 2
+        EOF
+21. Redirect specific file descriptors. This command redirects standard error (file descriptor 2) to standard output (file descriptor 1)-> command 2>&1
+22. Special variables
+    echo "Script name: $$0"
+    echo "First argument: $$1"
+    echo "Number of arguments: $$#"
+    echo "All arguments: $$@"
+    echo "Process ID: $$$"
+    echo "Exit status of last command: $$?"
+23. How do you create an array in Bash? -> array=(value1 value2 value3)
+24. How do you access an element in an array? -> echo $${array[0]}
+25. How do you get the length of an array? ->echo $${#array[@]}
+26. How do you read input from the user? -> read -p "Enter your name: " name
+27. What is the purpose of #!/bin/bash at the beginning of a script? -> It specifies the interpreter to be used to execute the script
+28. How do you make a script executable? -> chmod +x script.sh
+29. How do you use a for loop in Bash?
+    for i in {1..5}; do
+    echo $$i
+        done
+30. How do you use a while loop in Bash?
+    while [ condition ]; do
+    # commands
+        done
+31. How do you use a case statement in Bash?
+        case $$variable in
+        pattern1)
+            # commands
+            ;;
+        pattern2)
+            # commands
+            ;;
+        *)
+            # default commands
+            ;;
+    esac
+32. What is the difference between $$@ and $$*? -> $$@ treats each argument as a separate word, while $$* treats all arguments as a single word.
+33. How do you debug a Bash script? -> Use set -x to enable debugging and set +x to disable it
+34. How do you use the find command to search for files? find /path -name "filename"
+35. How do you use the cut command? -> cut -d',' -f1,3 file.csv
+
+
+Sed Questions
+========
+replace a string globally in a file -> sed 's/old_string/new_string/g' filename
+replace a string in a file and save the changes to the same file -> sed -i 's/old_string/new_string/g' filename
+delete lines containing a specific string -> sed '/pattern/d' filename
+print only lines that match a pattern -> sed -n '/pattern/p' filename
+insert a line before a match -> sed '/pattern/i\new_line' filename
+insert a line after a match ->sed '/pattern/a\new_line' filename
+delete the first line of a file -> sed '1d' filename
+delete the last line of a file -> sed '$d' filename
+replace a string only on lines matching a pattern -> sed '/pattern/s/old_string/new_string/' filename
+replace multiple spaces with a single space -> sed 's/ \+/ /g' filename
+delete a range of lines -> sed '5,10d' filename
+replace a string between two patterns -> sed '/start_pattern/,/end_pattern/s/old_string/new_string/' filename
+perform multiple replacements in a single command -> sed -e 's/old_string1/new_string1/g' -e 's/old_string2/new_string2/g' filename
+
+
+cut
+=====
+cut a specific field from a file ->cut -f1 filename
+specify a delimiter other than the default tab -> cut -d',' -f1 filename
+cut multiple fields -> cut -d',' -f1,3 filename
+cut a range of fields -> cut -d',' -f1-3 filename
+cut fields from the beginning to a specific field -> cut -d',' -f-3 filename
+cut fields from a specific field to the end -> cut -d',' -f3- filename
+cut specific characters from each line -> cut -c1-5 filename
+cut multiple ranges of characters -> cut -c1-5,10-15 filename
+cut characters from the beginning to a specific position -> cut -c-5 filename
+cut characters from a specific position to the end -> cut -c5- filename
+cut with echo -> echo "one,two,three" | cut -d',' -f2
+cut with grep -> grep 'pattern' filename | cut -d',' -f1
+cut with awk -> awk '{print $$1}' filename | cut -d',' -f2
+cut fields from multiple files -> cut -d',' -f1 file1 file2
+cut fields and remove duplicates -> cut -d',' -f1 filename | sort | uniq
+cut fields and filter based on a condition -> cut -d',' -f1 filename | grep 'condition'
+cut fields with a space delimiter -> cut -d' ' -f1 filename
+cut fields with a tab delimiter -> cut -d$$'\t' -f1 filename
+cut fields and ignore lines without the delimiter -> cut -d',' -f1 --output-delimiter=' ' filename
+
+
+awk
+===
+print the first field of a file -> awk '{print $$1}' filename
+specify a field delimiter -> awk -F',' '{print $$1}' filename
+print multiple fields -> awk '{print $$1, $$3}' filename
+print lines that match a pattern -> awk '/pattern/ {print $$0}' filename
+use variables in awk -> awk '{sum += $$1} END {print sum}' filename
+if statements in awk -> awk '{if ($$1 > 100) print $$0}' filename   awk '{for (i = 1; i <= NF; i++) print $$i}' filename
+print lines that do not match a pattern -> awk '!/pattern/ {print $$0}' filename
+use regular expressions in awk -> awk '/^pattern/ {print $$0}' filename
+logical operators in awk -> awk '$$1 > 100 && $$2 < 50 {print $$0}' filename
+ awk with grep -> grep 'pattern' filename | awk '{print $$1}'
+awk with sed -> sed 's/old/new/' filename | awk '{print $$1}'
