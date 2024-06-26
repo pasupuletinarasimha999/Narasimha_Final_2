@@ -39,45 +39,31 @@ module "cert_manager_irsa_role" {
   depends_on = [null_resource.node_activation]
 }
 
-resource "kubernetes_manifest" "certissuer" {
-  provider = kubernetes.eks_demo
-  manifest = {
-    apiVersion = "cert-manager.io/v1"
-    kind       = "ClusterIssuer"
-    metadata = {
-      name = "letsencrypt-prod"
-    }
-    spec = {
-      acme = {
-        server                  = "https://acme-v02.api.letsencrypt.org/directory"
-        email                   = "pasupuletinarasimha256@gmail.com"
-        privateKeySecretRef = {
-          name = "account-key-prod"
-        }
-        solvers = [
-          {
-            http01 = {
-              ingress = {
-                class = "nginx"
-              }
-            }
-          },
-          {
-            dns01 = {
-              route53 = {
-                hostedZoneID = "Z094518528U0CKC6X69LA"
-                region       = "us-east-1"
-                selector = {
-                  dnsZones = [
-                    "krazyworks.shop"
-                  ]
-                }
-              }
-            }
-          }
-        ]
-      }
-    }
-  }
+resource "kubectl_manifest" "certissuer" {
+  provider = kubectl.cluster1
+  yaml_body = <<YAML
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: pasupuletinarasimha256@gmail.com
+    privateKeySecretRef:
+      name: account-key-prod
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+      - dns01:
+          route53:
+            hostedZoneID: Z094518528U0CKC6X69LA
+            region: us-east-1
+            selector:
+              dnsZones:
+                - krazyworks.shop
+YAML
+
   depends_on = [helm_release.cert_manager]
 }

@@ -103,6 +103,6 @@ variable "github_username" {
 variable "github_token" {
   description = "used to integrate argocd to github"
   type        = string
-  default     = "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"
+  default     = "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"
   sensitive   = true
 }

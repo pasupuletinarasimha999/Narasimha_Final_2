@@ -23,59 +23,42 @@ output "argocd_admin_password" {
 # Resource for ArgoCD Ingress with proper API version and Kind
 
 
-resource "kubernetes_manifest" "argocd_ingress" {
-  provider = kubernetes.eks_demo
-  manifest = {
-    apiVersion = "networking.k8s.io/v1" # Ensure API version is v1 for Ingress resource
-    kind       = "Ingress"
-    metadata = {
-      name      = "argocd-ingress-rules"
-      namespace = "argocd"
-      annotations = {
-        "nginx.ingress.kubernetes.io/rewrite-target" = "/"
-        "cert-manager.io/cluster-issuer"             = "letsencrypt-prod"
-        "kubernetes.io/ingress.class"                = "nginx"
-      }
-    }
-    spec = {
-      ingressClassName = "nginx"
-      rules = [
-        {
-          host = "argocd.krazyworks.shop"
-          http = {
-            paths = [
-              {
-                path     = "/"
-                pathType = "Prefix"
-                backend = {
-                  service = {
-                    name = "argocd-server"
-                    port = {
-                      number = 80
-                    }
-                  }
-                }
-              }
-            ]
-          }
-        }
-      ]
-      tls = [
-        {
-          hosts = [
-            "argocd.krazyworks.shop"
-          ]
-          # reference secret for production TLS certificate
-          secretName = "argocd-letsencrypt-certificate"
-        }
-      ]
-    }
-  }
+resource "kubectl_manifest" "argocd_ingress" {
+  provider = kubectl.cluster1
+  yaml_body = <<YAML
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-ingress-rules
+  namespace: argocd
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: argocd.krazyworks.shop
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - argocd.krazyworks.shop
+      secretName: argocd-letsencrypt-certificate
+YAML
+
   depends_on = [helm_release.argocd]
 }
-
 # Resource for ArgoCD Project with proper API version and Kind
 resource "kubectl_manifest" "argocdproject" {
+  provider = kubectl.cluster1
   yaml_body = <<YAML
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
@@ -106,7 +89,7 @@ spec:
   orphanedResources:
     warn: false
 YAML
-  depends_on = [kubernetes_manifest.argocd_ingress] # Updated dependency
+  depends_on = [kubectl_manifest.argocd_ingress] # Updated dependency
 }
 
 resource "kubernetes_secret" "github_credentials" {
@@ -123,6 +106,7 @@ resource "kubernetes_secret" "github_credentials" {
   depends_on = [helm_release.argocd]
 }
 resource "kubectl_manifest" "argocd_repository" {
+provider = kubectl.cluster1
   yaml_body = <<YAML
 apiVersion: v1
 kind: ConfigMap
@@ -142,8 +126,9 @@ YAML
 
   depends_on = [kubernetes_secret.github_credentials]
 }
-
+/*
 resource "kubectl_manifest" "argocd_application" {
+provider = kubectl.cluster1
   yaml_body = <<YAML
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -176,7 +161,7 @@ spec:
 YAML
 
   depends_on = [kubectl_manifest.argocd_repository]
-}
+}*/
 
 locals {
   project_yaml = templatefile("${path.module}/argocd_project.yaml.tpl", {

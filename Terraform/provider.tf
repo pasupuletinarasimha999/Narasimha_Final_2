@@ -17,6 +17,10 @@ terraform {
       source  = "gavinbunney/kubectl"
       version = "~> 1.14"
     }
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+      version = "2.11.0"
+    }
   }
 }
 data "aws_eks_cluster_auth" "cluster" {
@@ -53,7 +57,7 @@ provider "kubernetes" {
 }
 
 provider "kubectl" {
-  alias                   = "cluster2"
+  alias                   = "cluster1"
   host                    = module.eks.cluster_endpoint
   cluster_ca_certificate  = base64decode(module.eks.cluster_certificate_authority_data)
   token                   = data.aws_eks_cluster_auth.cluster.token
