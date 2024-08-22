@@ -420,6 +420,14 @@ Frequently used modules in ansible
 
 17. How do you enable verbose logging in Ansible? (or) What does the `-v` option do in `ansible-playbook`?
 ANsible logs for playbooks using command : ansible-playbook -v playbook.yaml
+--check: Runs the playbook in check mode (dry run) to see what changes would be made without actually applying them.
+--diff: Shows the differences in files when changes are made, useful for debugging template changes.
+-v, -vv, -vvv: Increases the verbosity of the output, providing more detailed information about what Ansible is doing.
+Using assert: The ansible.builtin.assert module can be used to validate assumptions in your playbook, helping catch errors early.
+		  - name: Ensure a variable is set
+			ansible.builtin.assert:
+			that:
+				- some_variable is defined
 
 18. Where is the default Ansible configuration file located? (or) How do you customize Ansible's behavior?
 Ansible configuration file : /etc/ansible/ansible.cfg
@@ -607,6 +615,12 @@ stdout_lines: When you use the register keyword to capture the output of a task,
 Ansible to access local environment variables: 
 		- set_fact: env_var="{{ lookup('env','ENV_VAR') }}"
 
+They can be used to fetch data from files, environment variables, databases, and more.
+File Lookup-> msg: "{{ lookup('file', '/path/to/your/file.txt') }}"
+Env Lookup-> msg: "{{ lookup('env', 'HOME') }}"
+Template Lookup->  msg: "{{ lookup('template', 'templates/my_template.j2') }}"
+
+
 31. How do you iterate over the contents of a file in Ansible? (or) What is the `with_file` lookup plugin used for in Ansible?
 with_file: the with_file lookup plugin is used to iterate over the contents of a file, line by line. This can be useful when you need to process each line of a file individually within a task.
 				- name: Set up authorized keys for the deployer user
@@ -778,6 +792,22 @@ delegate_to: The delegate_to keyword in Ansible is used to delegate a task to a 
 		The run_once: true directive ensures that this task runs only once, even if there are multiple hosts in the webservers group.
 		
 42. What is the purpose of the `rescue` block in Ansible? (or) How do you handle errors in Ansible playbooks? (or) What is the difference between `block`, `rescue`, and `always` in Ansible?
+
+Using ignore_errors:
+		  	 -  name: Attempt to install a package
+				ansible.builtin.yum:
+				name: somepackage
+				state: present
+				ignore_errors: yes
+
+Using failed_when:
+			   - name: Check service status
+				ansible.builtin.shell: systemctl status myservice
+				register: result
+				failed_when: "'inactive' in result.stdout"
+
+
+
 Rescue: the rescue block is part of the error handling mechanism within a playbook. It allows you to define a set of tasks that should be executed if a preceding task fails. This is useful for implementing custom error recovery logic, ensuring that your playbook can handle failures gracefully. Ansible provides a structured way to handle errors using the block, rescue, and always directives:
 
 	block: Groups a set of tasks together.
@@ -800,3 +830,295 @@ Rescue: the rescue block is part of the error handling mechanism within a playbo
 					- name: Task to always run
 					  debug:
 						msg: "This task runs regardless of the success or failure of the main block."
+
+	Error Handling:
+
+
+
+43. How can you optimize the performance of Ansible playbooks?
+	Use async and poll: For tasks that can run in parallel.
+	Limit the number of forks: Adjust the forks parameter in the Ansible configuration file.
+	Use delegate_to: To run tasks on a different host.
+
+44. Dynamic Inventory file of ec2(aws_ec2.yml)
+
+			plugin: aws_ec2
+			regions:
+			- us-east-1
+			- us-west-2
+			filters:
+				instance-state-name: running
+			keyed_groups:
+				- key: tags.Name
+			  	  prefix: tag
+			hostnames:
+			- tag:Name
+			compose:
+				ansible_host: public_ip_address
+				ansible_user: ec2-user
+
+	Create or update your ansible.cfg file 
+		[defaults]
+		inventory = ./aws_ec2.yml
+
+45. explain more about ansible.cfg
+	[defaults]
+		inventory = ./inventory
+		remote_user = ansible
+		private_key_file = ~/.ssh/id_rsa
+		host_key_checking = False
+		retry_files_enabled = False
+		log_path = /var/log/ansible.log
+		timeout = 30
+		forks = 10
+		gathering = smart
+		fact_caching = jsonfile
+		fact_caching_connection = /tmp/ansible_facts
+		fact_caching_timeout = 86400
+		roles_path = ./roles
+		library = ./library
+		callback_whitelist = profile_tasks, timer
+
+		[privilege_escalation]
+		become = True
+		become_method = sudo
+		become_user = root
+		become_ask_pass = False
+
+		[ssh_connection]
+		ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+		pipelining = True
+
+46. Boilerplate of ansible
+	---
+	  - name: <Playbook Name>
+		hosts: <Target Hosts>
+		become: yes
+		vars:
+			# Define your variables here
+		tasks:
+			- name: <Task Description>
+			<module>:
+				<module_options>
+			register: result
+			when: <condition>
+			tags: <tags>
+
+		handlers:
+			- name: <Handler Name>
+			<module>:
+				<module_options>
+			listen: <event>
+
+		roles:
+			- <role_name>
+			
+
+47: Oracle weblogic opatch 
+===========================
+---
+- name: Oracle WebLogic Patching
+  hosts: weblogic_servers
+  become: yes
+  vars:
+    oracle_home: "/u01/app/oracle/middleware"
+    opatch_path: "/u01/app/oracle/middleware/OPatch"
+    patch_dir: "/path/to/patch"
+    patch_id: "12345678"  # Replace with actual patch ID
+
+  tasks:
+    - name: Shut down all WebLogic services
+      shell: |
+        . {{ oracle_home }}/user_projects/domains/mydomain/bin/setDomainEnv.sh
+        {{ oracle_home }}/user_projects/domains/mydomain/bin/stopWebLogic.sh
+      ignore_errors: yes
+
+    - name: Check compatibility of OPatch utility version and OUI
+      shell: |
+        {{ opatch_path }}/opatch version
+        {{ oracle_home }}/oui/bin/runInstaller -silent -responseFile {{ patch_dir }}/response.rsp -ignoreSysPrereqs -ignorePrereq
+      register: opatch_version_check
+      ignore_errors: yes
+
+    - name: Export ORACLE_HOME and PATH
+      shell: |
+        export ORACLE_HOME={{ oracle_home }}
+        export PATH=$PATH:{{ opatch_path }}
+      environment:
+        ORACLE_HOME: "{{ oracle_home }}"
+        PATH: "{{ ansible_env.PATH }}:{{ opatch_path }}"
+
+    - name: Determine what is installed on your system
+      shell: |
+        {{ opatch_path }}/opatch lsinventory
+      register: lsinventory_output
+
+    - name: Ensure patch application prerequisites are met using -report
+      shell: |
+        {{ opatch_path }}/opatch prereq CheckConflictAgainstOHWithDetail -phBaseDir {{ patch_dir }} -report
+      register: prereq_check
+      ignore_errors: yes
+
+    - name: Apply the patch
+      shell: |
+        {{ opatch_path }}/opatch apply {{ patch_dir }}/{{ patch_id }}
+      register: patch_apply
+      ignore_errors: yes
+
+    - name: Verify the applied patch using lsinventory
+      shell: |
+        {{ opatch_path }}/opatch lsinventory
+      register: lsinventory_verify
+
+    - name: Start all WebLogic services
+      shell: |
+        . {{ oracle_home }}/user_projects/domains/mydomain/bin/setDomainEnv.sh
+        {{ oracle_home }}/user_projects/domains/mydomain/bin/startWebLogic.sh
+      ignore_errors: yes
+
+    - name: Display OPatch version check output
+      debug:
+        var: opatch_version_check.stdout
+
+    - name: Display lsinventory output
+      debug:
+        var: lsinventory_output.stdout
+
+    - name: Display prerequisite check output
+      debug:
+        var: prereq_check.stdout
+
+    - name: Display patch apply output
+      debug:
+        var: patch_apply.stdout
+
+    - name: Display lsinventory verify output
+      debug:
+        var: lsinventory_verify.stdout
+==========================================================================
+Example of task for kubernetes
+================================
+ - name: Expose application
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: my-app-service
+            namespace: my-app
+          spec:
+            selector:
+              app: my-app
+            ports:
+            - protocol: TCP
+              port: 80
+              targetPort: 80
+            type: LoadBalancer
+===========================================================================
+Automating the backup of etcd data and persistent volumes, and setting up disaster recovery procedures to restore the cluster in case of failure
+============================
+---
+- name: EKS Backup and Disaster Recovery
+  hosts: localhost
+  gather_facts: false
+  vars:
+    aws_region: us-west-2
+    cluster_name: my-eks-cluster
+    etcd_backup_dir: /tmp/etcd-backup
+    s3_bucket: my-eks-backups
+    backup_retention_days: 7
+
+  tasks:
+    - name: Ensure required tools are installed
+      pip:
+        name:
+          - awscli
+          - kubernetes
+          - boto3
+
+    - name: Configure AWS CLI
+      shell: |
+        aws configure set aws_access_key_id {{ aws_access_key_id }}
+        aws configure set aws_secret_access_key {{ aws_secret_access_key }}
+        aws configure set region {{ aws_region }}
+      no_log: true
+
+    - name: Get EKS cluster details
+      aws_eks_cluster:
+        name: "{{ cluster_name }}"
+        region: "{{ aws_region }}"
+      register: eks_cluster
+
+    - name: Update kubeconfig
+      shell: |
+        aws eks get-token --cluster-name {{ cluster_name }} | kubectl apply -f -
+
+    - name: Backup etcd data
+      shell: |
+        kubectl exec -it -n kube-system etcd-{{ item }} -- etcdctl --endpoints=https://localhost:2379 \
+        --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+        --cert=/etc/kubernetes/pki/etcd/server.crt \
+        --key=/etc/kubernetes/pki/etcd/server.key \
+        snapshot save /tmp/etcd-snapshot-$(date +%Y%m%d-%H%M%S).db
+      loop: "{{ eks_cluster.cluster.resources_vpc_config.subnet_ids }}"
+      register: etcd_backup
+
+    - name: Compress backups
+      archive:
+        path:
+          - "{{ etcd_backup_dir }}"
+        dest: "/tmp/eks-backup-{{ ansible_date_time.date }}.tar.gz"
+
+    - name: Upload backup to S3
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        object: "backups/eks-backup-{{ ansible_date_time.date }}.tar.gz"
+        src: "/tmp/eks-backup-{{ ansible_date_time.date }}.tar.gz"
+        mode: put
+
+    - name: Clean up old backups
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        prefix: "backups/"
+        mode: list
+      register: s3_backups
+
+    - name: Delete old backups
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        object: "{{ item.key }}"
+        mode: delobj
+      loop: "{{ s3_backups.s3_keys }}"
+      when: (ansible_date_time.epoch | int) - (item.last_modified_epoch | int) > (backup_retention_days * 86400)
+
+    - name: Create disaster recovery script
+      copy:
+        dest: "/tmp/eks-disaster-recovery.sh"
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          set -e
+
+          # Download the latest backup
+          LATEST_BACKUP=$(aws s3 ls s3://{{ s3_bucket }}/backups/ | sort | tail -n 1 | awk '{print \$4}')
+          aws s3 cp s3://{{ s3_bucket }}/backups/$LATEST_BACKUP /tmp/latest-backup.tar.gz
+
+          # Extract the backup
+          tar -xzvf /tmp/latest-backup.tar.gz -C /tmp
+
+          # Restore etcd data
+          ETCD_SNAPSHOT=$(ls /tmp/etcd-backup/*.db | sort | tail -n 1)
+          kubectl exec -it -n kube-system etcd-$HOSTNAME -- etcdctl --endpoints=https://localhost:2379 \
+          --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+          --cert=/etc/kubernetes/pki/etcd/server.crt \
+          --key=/etc/kubernetes/pki/etcd/server.key \
+          snapshot restore $ETCD_SNAPSHOT
+          echo "EKS cluster restored successfully!"
+
+    - name: Display disaster recovery instructions
+      debug:
+        msg: |
+          To restore the EKS cluster in case of a disaster:
+          1. Ensure you have the necessary AWS and kubectl credentials set up.
+          2. Run the disaster recovery script: /tmp/eks-disaster-recovery.sh

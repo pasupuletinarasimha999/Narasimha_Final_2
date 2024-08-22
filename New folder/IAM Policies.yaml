@@ -1,3 +1,17 @@
+Curly Braces {}
+Objects: Curly braces are used to define objects, which are collections of key-value pairs.
+    The entire JSON structure is an object: { ... }.
+    The Statement key contains an array of objects: [ { ... } ].
+    The Principal key contains an object: { "AWS": [ ... ] }.
+
+Square Brackets []
+Arrays: Square brackets are used to define arrays, which are ordered lists of values.
+The Statement key contains an array of objects: [ { ... } ].
+The Action key contains an array of strings: [ "s3:GetObject" ].
+The AWS key within the Principal object contains an array of strings: [ "*" ].
+The Resource key contains an array of strings: [ "arn:aws:s3:::BUCKET_NAME/*" ].
+
+
 Anonymous GET access
 ------------------------
 {
@@ -190,6 +204,110 @@ Full access (and S3 console) for specific IAM users
       "Effect": "Allow",
       "Resource": [
         "arn:aws:s3:::BUCKET_NAME/*"
+      ]
+    }
+  ]
+}
+
+-=======================================================================
+1. Granting Read or Write Access to an S3 Bucket
+2. Granting Full Access to a Specific IAM User
+3. Limiting Access Based on IP Address
+4. Granting Access to Specific VPC Endpoints
+5. Granting Access to an External AWS Account
+6. Enforcing SSL/TLS for Bucket Access
+7. Granting Access to Specific Prefixes (Folders)
+
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "GrantReadWriteAccess",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": "arn:aws:s3:::your-bucket-name/*"
+    },
+    {
+      "Sid": "GrantFullAccessToSpecificUser",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789012:user/SpecificUser"
+      },
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::your-bucket-name",
+        "arn:aws:s3:::your-bucket-name/*"
+      ]
+    },
+    {
+      "Sid": "LimitAccessBasedOnIP",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::your-bucket-name",
+        "arn:aws:s3:::your-bucket-name/*"
+      ],
+      "Condition": {
+        "NotIpAddress": {
+          "aws:SourceIp": "203.0.113.0/24"
+        }
+      }
+    },
+    {
+      "Sid": "GrantAccessToSpecificVPCEndpoints",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::your-bucket-name",
+        "arn:aws:s3:::your-bucket-name/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:sourceVpce": "vpce-1a2b3c4d"
+        }
+      }
+    },
+    {
+      "Sid": "GrantAccessToExternalAWSAccount",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::987654321098:root"
+      },
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::your-bucket-name",
+        "arn:aws:s3:::your-bucket-name/*"
+      ]
+    },
+    {
+      "Sid": "EnforceSSLTLS",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::your-bucket-name",
+        "arn:aws:s3:::your-bucket-name/*"
+      ],
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
+    },
+    {
+      "Sid": "GrantAccessToSpecificPrefixes",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::your-bucket-name/specific-prefix/*"
       ]
     }
   ]

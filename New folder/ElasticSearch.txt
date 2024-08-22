@@ -1,0 +1,91 @@
+Nodes store the data that we add to elasticsearch
+A cluster is a collection of Nodes
+Data is stores as documents, which are JSON objects
+Documents are grouped together with indices
+
+    Elasticsearch dashboard -> dev tools -> console
+        In console we can run commands to get details about the cluster, configurations of kibana/elasticsearch, our data. all these will be stored as indices.  
+            eg: GET /_cluster/health
+                GET /_cat/nodes?v
+                GET /_cat/indices?v
+sharding is spliting the indexes files, each peice is shard. This helps to store the large files into chunks in multiple nodes
+An index contains a single shard by default.
+Elasticsearch supports replication for fault tolerance, if one node fails, this replication helps.
+Replication is configured at the index level
+Replication works by creating copies of shards, referred to as replica shards.
+A shard that has been replicated is called primary shard.
+A primary shard and its replica shard are referred as replication group
+The number of replicas can be configured at the index creation
+replicas of the primary shard will be stored in opposite nodes since if one fails, replicas will take the load.
+Replica is not going to get created on same node of primary replica shard.
+
+Creating and deleting indices
+============================
+    PUT /products
+    {
+        "settings":{
+            "number_of_shards": 2,
+            "number of replicas":2
+        }
+    }
+    DELETE /products
+
+Indexing documents
+====================
+POST /products/_doc/100 -->id will be stored as 100 for _doc document
+{
+    "name":"cofee maker",
+    "price":64
+}
+
+Retrieving Document by ID
+============================
+GET /products/_doc/100 --> 100 is id of the document(_doc)
+
+update document
+==============
+POST /products/_update/100 -->_update is update api
+{
+    "doc": {
+        "instock": 3
+    }
+}
+
+Scripted Updates
+==============
+POST /products/_update/100
+{
+    "script": {
+        "source": "ctx._source.in_stock -= params.quantity",
+        "params":
+            "quantity": 4
+    }
+}
+
+eg:2
+====
+POST /products/_update/100
+{
+    "script": {
+        "source": """
+            if (ctx._source.in_stock <=1)
+            {
+                ctx.op = 'delete';
+            }
+            ctx._source.in_stock--;
+    }
+}
+
+Upsert -> same like update but if document no exists then it will create it else updates it
+========
+POST /products/_update/101
+{
+    "script" : {
+        "source" : "ctx._source.in_Stock++"
+    }
+    "upsert": {
+        "name" : "Blender"
+        "price" : 399,
+        "in_stock": 5
+    }
+}

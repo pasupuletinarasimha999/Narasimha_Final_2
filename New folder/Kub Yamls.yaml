@@ -901,3 +901,68 @@ spec:
           containerPort: 3000
 
 ===================================================
+Istio LoadBalancer
+=====================
+1. External Client sends a request to the Gateway.
+2. Gateway forwards the request to the appropriate VirtualService based on the routing rules.
+3. VirtualService routes the request to the appropriate service subset defined in the DestinationRule.
+4. DestinationRule applies traffic policies, including mTLS (ISTIO_MUTUAL), to secure the communication between services.
+
+1. Gateway: A Gateway is used to manage inbound traffic to the mesh.
+  apiVersion: networking.istio.io/v1alpha3
+  kind: Gateway
+  metadata:
+    name: my-gateway
+    namespace: istio-system
+  spec:
+    selector:
+      istio: ingressgateway # use istio default controller
+    servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+      - "*"
+2. Mutual TLS (mTLS): To enable mTLS for your services, you need to create a PeerAuthentication resource.
+  apiVersion: security.istio.io/v1beta1
+  kind: PeerAuthentication
+  metadata:
+    name: default
+    namespace: default
+  spec:
+    mtls:
+      mode: STRICT
+
+3. DestinationRule: A DestinationRule configures the policies to apply to traffic intended for a service after routing has occurred.
+    apiVersion: networking.istio.io/v1alpha3
+    kind: DestinationRule
+    metadata:
+      name: my-destination-rule
+      namespace: default
+    spec:
+      host: my-service.default.svc.cluster.local
+      trafficPolicy:
+        tls:
+          mode: ISTIO_MUTUAL
+
+4. VirtualService: A VirtualService defines the rules that control how requests for a service are routed within the mesh.
+    apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+    metadata:
+      name: my-virtual-service
+      namespace: default
+    spec:
+      hosts:
+      - my-service.default.svc.cluster.local
+      gateways:
+      - my-gateway
+      http:
+      - match:
+        - uri:
+            prefix: /my-service
+        route:
+        - destination:
+            host: my-service.default.svc.cluster.local
+            port:
+              number: 80

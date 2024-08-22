@@ -240,4 +240,159 @@ The input directive in Jenkins Pipelines is used to pause the pipeline execution
 				}
 			}
 		}
+10. Provide an example of a Jenkins Pipeline that uses a Kubernetes pod template.
+			 pipeline {
+				agent {
+					kubernetes {
+						label 'jenkins-agent'
+						defaultContainer 'jnlp'
+						yaml """
+			apiVersion: v1
+			kind: Pod
+			metadata:
+			  labels:
+				some-label: some-value
+			spec:
+			  containers:
+			  - name: jnlp
+				image: jenkins/inbound-agent:4.10-3
+				args: ['\$$(JENKINS_SECRET)', '\$$(JENKINS_NAME)']
+				resources:
+				  limits:
+					memory: 512Mi
+					cpu: 1
+				  requests:
+					memory: 256Mi
+					cpu: 0.5
+			  - name: maven
+				image: maven:3.6.3-jdk-8
+				command:
+				- cat
+				tty: true
+				resources:
+				  limits:
+					memory: 1024Mi
+					cpu: 2
+				  requests:
+					memory: 512Mi
+					cpu: 1
+			  - name: nodejs
+				image: node:14
+				command:
+				- cat
+				tty: true
+				resources:
+				  limits:
+					memory: 1024Mi
+					cpu: 2
+				  requests:
+					memory: 512Mi
+					cpu: 1
+			"""
+					}
+				}
+				stages {
+					stage('Build') {
+						steps {
+							container('maven') {
+								sh 'mvn clean install'
+							}
+						}
+					}
+					stage('Test') {
+						steps {
+							container('nodejs') {
+								sh 'npm install'
+								sh 'npm test'
+							}
+						}
+					}
+					stage('Deploy') {
+						steps {
+							echo 'Deploying...'
+							// Add your deployment steps here
+						}
+					}
+				}
+			}
+=================
+Agents option
+1. agent any
+2. agent none
+3. agent label
+		pipeline {
+    agent {
+        label 'linux'
+    }
+4. agent docker
+		pipeline {
+    agent {
+        docker {
+            image 'maven:3-alpine'
+            args '-v /root/.m2:/root/.m2'
+        }
+    }
+5. agent dockerfile
+		pipeline {
+    agent {
+        dockerfile {
+            filename 'Dockerfile'
+            dir 'docker'
+            additionalBuildArgs '--build-arg MY_ARG=my_value'
+        }
+    }
+6. agent kubernetes
+		pipeline {
+    agent {
+        kubernetes {
+            yaml """
+            apiVersion: v1
+            kind: Pod
+            spec:
+              containers:
+              - name: maven
+                image: maven:3-alpine
+                command:
+                - cat
+                tty: true
+            """
+        }
+    }
+7. agent { node { ... } }
+	pipeline {
+    agent {
+        node {
+            label 'linux'
+            customWorkspace '/custom/workspace'
+        }
+    }
+8. agent { label 'label' } at Stage Level
+	pipeline {
+    agent none
+    stages {
+        stage('Build') {
+            agent {
+                label 'linux'
+            }
+            steps {
+                echo 'Building on a Linux agent...'
+            }
+        }
 
+
+buildDiscarder and disableConcurrentBuilds
+pipeline {
+    agent any
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+
+lock Step: The lock step, provided by the Lockable Resources plugin, allows you to define critical sections in your pipeline that should not be executed concurrently.
+stage('Deploy') {
+            steps {
+                lock(resource: 'deploy-lock') {
+                    echo 'Deploying...'
+                    // Deployment steps go here
+                }
+            }

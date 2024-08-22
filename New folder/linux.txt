@@ -41,3 +41,19 @@ Error and Stdout Logs Separation: Redirect with operators like 2> for errors and
 Nohup Command: Run commands immune to hangups.
 Netstat Command: Network statistics; shows network connections, routing tables, etc.
 Run Script at Boot Level: Place scripts in init.d or use systemd services
+
+
+create and mount storage to linux servers
+    Identify the storage device: lsblk or fdisk -l
+    Partition the device: sudo fdisk /dev/sdX
+    Format the partition: sudo mkfs.ext4 /dev/sdX1
+    Create a mount point: sudo mkdir /mnt/mydata
+    Mount the partition: sudo mount /dev/sdX1 /mnt/mydata
+    Verify the mount: df -h
+    Make the mount permanent: Edit /etc/fstab
+
+
+Creating user in sudoer file
+1. Open the /etc/sudoers File
+2. newuser ALL=(ALL:ALL) ALL
+3. Save

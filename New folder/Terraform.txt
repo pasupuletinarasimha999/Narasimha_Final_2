@@ -13,6 +13,9 @@ terraform {
     }
   }
 }
+
+required_providers Block: Use this block in the root module to specify provider dependencies and their versions.
+provider Block: Use this block to configure the settings for a specific provider.
 ===================================
 Two required_providers
 --------------------------
@@ -36,7 +39,7 @@ terraform {
   
   provider "aws" {
     alias  = "acc2"
-    region = "eu-central-1"
+    region = "eu-central-2"
     assume_role {
       role_arn = "arn:aws:iam::ACC2:role/MyRoleAcc2"
     }
@@ -123,7 +126,7 @@ data "aws_ami" "ubuntu" {
     }
   }
 =======================================================
-Dynamic_Block
+Dynamic_Block: In Terraform, a dynamic block is used when you need to generate multiple nested blocks within a resource or module dynamically based on a variable or a list.
 ===========
 resource "aws_elastic_beanstalk_environment" "tfenvtest" {
     name = "tf-test-name"
@@ -314,8 +317,189 @@ terraform state rm <resource_type>.<resource_name> --> removes the imported or n
 terraform output
 terraform output -state=<path_to_state_file>
 terraform graph
+terraform workspace new <workspace_name>
 terraform workspace list
+terraform workspace select <workspace_name>
 terraform providers
 terraform refresh
 terraform taint <resource_name> -->During the next terraform apply, the tainted resource will be destroyed and recreated, even if the Terraform configuration hasn't changed.
 terraform untaint <resource_name>
+
+===========================================
+Life cycle(installation, version upgrade etc.) of Hashicorp vault cluster
+    1. Download Vault: Download the Vault binary from the official HashiCorp website.
+        curl -O https://releases.hashicorp.com/vault/<version>/vault_<version>_linux_amd64.zip
+    2. Install Vault: Unzip the binary and move it to a directory in your PATH.
+        unzip vault_<version>_linux_amd64.zip
+        sudo mv vault /usr/local/bin/
+    3. Verify Installation: Check the Vault version to verify the installation.
+        vault --version
+    4. Configure Vault: Create a configuration file (config.hcl) for Vault.
+      storage "file" {
+        path = "/opt/vault/data"
+      }
+
+      listener "tcp" {
+        address     = "127.0.0.1:8200"
+        tls_disable = 1
+      }
+
+      ui = true
+
+      replication {
+          primary {
+            performance_standby = true
+          }
+        }
+    5. Start Vault: Start Vault in development mode for initial setup.
+        vault server -dev
+    6. Initialize Vault: Initialize Vault to set up the storage backend and generate unseal keys.
+        vault operator init
+    7. Unseal Vault: Unseal Vault using the unseal keys generated during initialization.
+      vault operator unseal <unseal-key-1>
+      vault operator unseal <unseal-key-2>
+      vault operator unseal <unseal-key-3>
+
+Scaling OF Vault
+==================
+  1. Install Vault on New Node: Follow the installation steps to install Vault on the new node.
+  2. Configure New Node: Use the same configuration file as the existing nodes.
+  3. Join Cluster: Start the new Vault node and join it to the existing cluster.
+    vault server -config=/path/to/config.hcl
+
+Vault Secret Management
+=====================
+1. Enable KV Secrets Engine
+    vault secrets enable -path=secret kv
+2. Store a Secret
+    vault kv put secret/mysecret key1="value1" key2="value2"
+3. Read a Secret
+    vault kv get secret/mysecret
+4. Update a Secret
+   vault kv put secret/mysecret key1="newvalue1" key2="newvalue2"
+5. Delete a Secret
+    vault kv delete secret/mysecret
+
+Vault Key Management System (KMS)
+================================
+1. Enable Transit Secrets Engine
+    vault secrets enable transit
+2. Create a Key
+    vault write -f transit/keys/my-key
+3. Encrypt Data
+    vault write transit/encrypt/my-key plaintext=$(base64 <<< "my secret data")
+4. Decrypt Data
+    vault write transit/decrypt/my-key ciphertext=<ciphertext>
+5. Rotate Key
+    vault write -f transit/keys/my-key/rotate
+
+Certificate Management
+========================
+1. Enable PKI Secrets Engine
+    vault secrets enable pki
+    vault secrets tune -max-lease-ttl=8760h pki
+2. Generate Root Certificate
+    vault write pki/root/generate/internal common_name="example.com" ttl=8760h
+3. Configure URLs
+    vault write pki/config/urls \
+    issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" \
+    crl_distribution_points="http://127.0.0.1:8200/v1/pki/crl"
+4. Create a Role
+    vault write pki/roles/example-dot-com \
+    allowed_domains="example.com" \
+    allow_subdomains=true \
+    max_ttl="72h"
+5. Issue a Certificate
+    vault write pki/issue/example-dot-com common_name="test.example.com"
+
+Vault Policies
+================
+Vault policies, on the other hand, are used to define access control rules for users and applications interacting with Vault.
+        # Allow Terraform to read and write secrets in the "terraform/" path
+        path "terraform/*" {
+          capabilities = ["create", "read", "update", "delete", "list"]
+        }
+
+        # Allow Terraform to manage its own tokens
+        path "auth/token/create" {
+          capabilities = ["update"]
+        }
+
+        path "auth/token/lookup-self" {
+          capabilities = ["read"]
+        }
+
+        path "auth/token/renew-self" {
+          capabilities = ["update"]
+        }
+
+        path "auth/token/revoke-self" {
+          capabilities = ["update"]
+        }
+
+        # Allow Terraform to read policies (if needed)
+        path "sys/policies/acl" {
+          capabilities = ["list"]
+        }
+
+        path "sys/policies/acl/*" {
+          capabilities = ["read"]
+        }
+
+Policy for AWS Secrets Engine
+============================
+    # Allow Terraform to read and write secrets in the "terraform/" path
+    path "terraform/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+
+    # Allow Terraform to manage its own tokens
+    path "auth/token/create" {
+      capabilities = ["update"]
+    }
+
+    path "auth/token/lookup-self" {
+      capabilities = ["read"]
+    }
+
+    path "auth/token/renew-self" {
+      capabilities = ["update"]
+    }
+
+    path "auth/token/revoke-self" {
+      capabilities = ["update"]
+    }
+
+    # Allow Terraform to generate AWS credentials
+    path "aws/creds/*" {
+      capabilities = ["read"]
+    }
+
+To apply the policies through Cli
+===================================
+  vault policy write terraform-policy terraform-policy.hcl
+
+Create the Policy Using Terraform
+      provider "vault" {
+        address = "https://vault.example.com"
+      }
+
+      resource "vault_policy" "db_read_policy" {
+        name   = "db-read-policy"
+        policy = file("db-policy.hcl")
+      }
+
+Create a Vault Token with the Policy
+    resource "vault_token" "db_read_token" {
+      policies = ["db-read-policy"]
+    }
+
+Use the Token in Your Application
+      data "vault_generic_secret" "db_password" {
+        path = "secret/data/db_password"
+        token = vault_token.db_read_token.id
+      }
+
+      output "db_password" {
+        value = data.vault_generic_secret.db_password.data["data"]["password"]
+      }

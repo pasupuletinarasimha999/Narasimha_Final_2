@@ -21,6 +21,62 @@ Logs: clouwatch logs (we will get logs related to specific application)
 Configurations: It has role permissions, 
 
 =================================================================
+AWS Direct Connect: easy to establish a dedicated network connection from your premises to AWS. can establish private connectivity between AWS and your data center, office, or colocation environment.
+
+Direct Connect Gateway: allows you to connect your AWS Direct Connect connection to one or more VPCs in your account that are located in any AWS Region 
+AWS Direct Connect Configuration Steps
+	Create a Direct Connect Connection:
+		Sign in to the AWS Management Console.
+		Navigate to the AWS Direct Connect console.
+		Choose "Create a connection."
+		Select the location and port speed.
+		Complete the connection request.
+	Download the Letter of Authorization and Connecting Facility Assignment (LOA-CFA):
+		Once the connection request is approved, download the LOA-CFA from the console.
+		Provide the LOA-CFA to your network provider to establish the physical connection.
+	Configure Your On-Premises Router:
+		Configure your on-premises router with the details provided by AWS.
+		Ensure that the router is set up to handle BGP (Border Gateway Protocol) sessions.
+	Create a Virtual Interface:
+		In the AWS Direct Connect console, choose "Create virtual interface."
+		Select either a private or public virtual interface.
+		Enter the necessary details, such as VLAN ID, BGP ASN, and IP addresses.
+	Verify the Connection:
+		Ensure that the BGP session is established.
+		Verify that you can route traffic between your on-premises network and AWS.
+
+AWS Direct Connect Gateway Configuration Steps
+	Create a Direct Connect Gateway:
+		In the AWS Direct Connect console, choose "Direct Connect Gateways."
+		Choose "Create Direct Connect Gateway."
+		Enter a name and ASN for the gateway.
+	Associate the Direct Connect Gateway with a Virtual Private Gateway:
+		In the Direct Connect console, choose "Virtual Interfaces."
+		Select the virtual interface you want to associate.
+		Choose "Associate with Direct Connect Gateway."
+		Select the Direct Connect Gateway and the Virtual Private Gateway (VGW) to associate.
+	Configure Routing:
+		Ensure that the appropriate routes are propagated to your on-premises network.
+		Verify that traffic can flow between your on-premises network and the VPCs associated with the Direct Connect Gateway.
+
+AWS Transit Gateway: is a network transit hub that you can use to interconnect your VPCs and on-premises networks.
+Create a Transit Gateway:
+	In the VPC console, choose "Transit Gateways."
+	Choose "Create Transit Gateway."
+	Enter the necessary details, such as name, description, and ASN.
+Create Transit Gateway Attachments:
+	In the Transit Gateway console, choose "Create Transit Gateway Attachment."
+	Select the resource type (VPC, VPN, Direct Connect Gateway).
+	Select all the VPC's which need to be tagged to transit gateway
+	Enter the necessary details and create the attachment.
+Configure Route Tables:
+	In the Transit Gateway console, choose "Route Tables."
+	Create a route table and associate it with the appropriate attachments.
+	Add routes to direct traffic between the attachments.
+Verify Connectivity:
+	Ensure that the routes are correctly configured.
+	Verify that traffic can flow between the attached VPCs, on-premises networks, and other resources.
+===================================================================
 VPC Endpoints
 --------------
 Connects AWS Services privately from VPC instead of going through internet through NIC
@@ -267,14 +323,446 @@ CodePipeline
 		CodePipeline with Beanstalk for continous delivery of Web Applications to the cloud
 		Use cloudPipeline with Lambda 
 		CodePipeline with CloudFomration
+
+===============================================================
+
+how to integrate my sqs with lambda
+Integrating Amazon SQS with AWS Lambda allows you to process messages from your SQS queue automatically using a Lambda function. This integration is useful for building serverless applications that can scale automatically and handle asynchronous tasks efficiently.
+
+Step-by-Step Guide to Integrate SQS with Lambda
+1. Create an SQS Queue
+	If you haven't already created an SQS queue, follow these steps:
+
+	Sign in to AWS Management Console:
+	Go to the AWS Management Console.
+	Sign in with your credentials.
+	Navigate to SQS:
+	In the AWS Management Console, type "SQS" in the search bar and select "Simple Queue Service".
+	Create a New Queue:
+	Click on "Create queue".
+	Choose the type of queue: Standard or FIFO (First-In-First-Out).
+	Enter the queue name.
+	Configure additional settings like visibility timeout, message retention period, etc.
+	Click "Create Queue".
+2. Create a Lambda Function
+	Navigate to Lambda:
+	In the AWS Management Console, type "Lambda" in the search bar and select "Lambda".
+	Create a New Function:
+	Click on "Create function".
+	Choose "Author from scratch".
+	Enter a function name.
+	Choose a runtime (e.g., Python, Node.js).
+	Click "Create function".
+	Add Code to the Lambda Function:
+In the function code editor, add the code to process messages from the SQS queue.
+
+		import json
+
+		def lambda_handler(event, context):
+		for record in event['Records']:
+			# Process each message
+			message_body = record['body']
+			print(f"Received message: {message_body}")
+			# Add your message processing logic here
+
+		return {
+			'statusCode': 200,
+			'body': json.dumps('Messages processed successfully')
+		}
+3. Add SQS Trigger to Lambda Function
+	Configure Triggers:
+	In the Lambda function configuration page, click on "Add trigger".
+	Select "SQS" from the list of trigger options.
+	Configure SQS Trigger:
+	Select the SQS queue you created earlier.
+	Configure the batch size (the number of messages to process in a single invocation).
+	Click "Add".
+4. Set Up Permissions
+	Lambda needs permission to read messages from the SQS queue. AWS automatically creates the necessary permissions when you add the SQS trigger to the Lambda function. However, you can also manually configure the permissions using IAM policies.
+
+Example IAM Policy:
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "sqs:ReceiveMessage",
+      "Resource": "arn:aws:sqs:us-east-1:123456789012:YourQueueName"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "sqs:DeleteMessage",
+      "Resource": "arn:aws:sqs:us-east-1:123456789012:YourQueueName"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "sqs:GetQueueAttributes",
+      "Resource": "arn:aws:sqs:us-east-1:123456789012:YourQueueName"
+    }
+  ]
+}
+Attach this policy to the Lambda execution role.
+
+5. Test the Integration
+	Send a Test Message to the SQS Queue:
+	Navigate to the SQS console.
+	Select your queue and click on "Send and receive messages".
+	Send a test message to the queue.
+	Verify Lambda Execution:
+	Navigate to the Lambda console.
+	Select your Lambda function and check the "Monitoring" tab to see if the function was invoked.
+	Check the logs in Amazon CloudWatch to verify that the message was processed.
 		
-		
-	
-	
-	
+=====================================================================================
+create trust policy and iam role for sts assumerole
+Step-by-Step Guide
+1. Create a Trust Policy
+A trust policy specifies which entities (users, groups, roles, or AWS services) are allowed to assume the role. This policy is attached to the IAM role.
+
+Example Trust Policy:
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789012:role/TrustedRole"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+In this example, only the TrustedRole in the specified AWS account (123456789012) can assume the role.
+
+2. Create an IAM Role
+	Sign in to AWS Management Console:
+	Go to the AWS Management Console.
+	Sign in with your credentials.
+	Navigate to IAM:
+	In the AWS Management Console, type "IAM" in the search bar and select "IAM".
+	Create a New Role:
+	Click on "Roles" in the left-hand menu.
+	Click on "Create role".
+	Select Trusted Entity:
+	Choose "Another AWS account".
+	Enter the AWS account ID of the trusted account (e.g., 123456789012).
+	Attach Policies:
+	Attach the necessary policies to the role. For example, if the role needs to access S3, you can attach the AmazonS3ReadOnlyAccess policy.
+	Set Permissions Boundary (Optional):
+	You can set a permissions boundary to limit the maximum permissions this role can have.
+	Review and Create Role:
+	Review the role details and click "Create role".
+
+3. Select the User created and add permissions button -> select the role created above
+4. copy the assumerole url inside the role created and after switching to above user in aws login, paste the url to switch the role of that user to access the resource
+=============================================================
+AssumeRoleWithSAML --> AD Login, okta etc
+
+1. Set Up the IdP:
+	Configure your SAML 2.0-compliant IdP (e.g., Active Directory Federation Services, Okta, OneLogin) to authenticate users and provide SAML assertions.
+2. Export the IdP Metadata:
+	Export the IdP metadata XML file, which contains information about the IdP, including its SAML endpoints and certificates.
+3. Add a New Identity Provider
+	Go to the AWS Management Console.
+	Sign in with your credentials.
+	In the AWS Management Console, type "IAM" in the search bar and select "IAM".
+	Click on "Identity providers" in the left-hand menu.
+	Click on "Add provider".
+	Select "SAML" as the provider type.
+	Provide a name for the provider (e.g., MySAMLProvider).
+	Upload the IdP metadata XML file.
+	Click "Add provider".
+4. Create an IAM Role for SAML Federation
+	Click on "Roles" in the left-hand menu.
+	Click on "Create role".
+	Select "SAML 2.0 federation" as the trusted entity.
+	Choose the SAML provider you created (e.g., MySAMLProvider).
+	Select the "Allow programmatic and AWS Management Console access" option.
+	Attach the necessary policies to the role (e.g., AmazonS3ReadOnlyAccess).
+	Review and create the role.
+
+	Trust Policy looks like this:
+		{
+			"Version": "2012-10-17",
+			"Statement": [
+				{
+				"Effect": "Allow",
+				"Principal": {
+					"Federated": "arn:aws:iam::123456789012:saml-provider/MySAMLProvider"
+				},
+				"Action": "sts:AssumeRoleWithSAML",
+				"Condition": {
+					"StringEquals": {
+					"SAML:aud": "https://signin.aws.amazon.com/saml"
+					}
+				}
+				}
+			]
+			}
+5. Configure the IdP to Use the IAM Role
+	Configure the IdP to include the necessary assertions in the SAML response to allow users to assume the IAM role.
+	Ensure that the SAML assertion includes the RoleArn and PrincipalArn attributes.
+
+Example Code:
+
+		import boto3
+
+		# Initialize STS client
+		sts_client = boto3.client('sts')
+
+		# Assume a role with SAML
+		response = sts_client.assume_role_with_saml(
+		RoleArn='arn:aws:iam::123456789012:role/MySAMLRole',
+		PrincipalArn='arn:aws:iam::123456789012:saml-provider/MySAMLProvider',
+		SAMLAssertion='BASE64_ENCODED_SAML_ASSERTION',
+		DurationSeconds=3600  # 1 hour
+		)
+
+		# Extract temporary credentials
+		credentials = response['Credentials']
+		access_key = credentials['AccessKeyId']
+		secret_key = credentials['SecretAccessKey']
+		session_token = credentials['SessionToken']
+
+		# Use the temporary credentials to create a new session
+		session = boto3.Session(
+		aws_access_key_id=access_key,
+		aws_secret_access_key=secret_key,
+		aws_session_token=session_token
+		)
+
+		# Use the session to interact with AWS services
+		s3_client = session.client('s3')
+		response = s3_client.list_buckets()
+		print(response)
+
+==================================================
+AssumeRoleWithWebIdentity
+
+1. Configure the Web Identity Provider
+	Configure your web identity provider (e.g., Amazon Cognito, Google, Facebook) to authenticate users and provide web identity tokens.
+2. Create an IAM Identity Provider in AWS
+	Go to the AWS Management Console.
+	Sign in with your credentials.
+	In the AWS Management Console, type "IAM" in the search bar and select "IAM".
+	Click on "Identity providers" in the left-hand menu.
+	Click on "Add provider".
+	Select "OpenID Connect" as the provider type.
+	Provide the necessary details (e.g., provider URL, client ID).
+	Click "Add provider".
+3. Create an IAM Role for Web Identity Federation
+	Click on "Roles" in the left-hand menu.
+	Click on "Create role".
+	Select "Web identity" as the trusted entity.
+	Choose the web identity provider you created.
+	Select the "Allow programmatic and AWS Management Console access" option.
+	Attach the necessary policies to the role (e.g., AmazonS3ReadOnlyAccess).
+	Review and create the role.
+
+	Trust policy looks like this:
+	{
+		"Version": "2012-10-17",
+		"Statement": [
+			{
+			"Effect": "Allow",
+			"Principal": {
+				"Federated": "cognito-identity.amazonaws.com"
+			},
+			"Action": "sts:AssumeRoleWithWebIdentity",
+			"Condition": {
+				"StringEquals": {
+				"cognito-identity.amazonaws.com:aud": "us-east-1:EXAMPLE-IDENTITY-POOL-ID",
+				"cognito-identity.amazonaws.com:sub": "EXAMPLE-USER-ID"
+				}
+			}
+			}
+		]
+		}
+4. Configure the Web Identity Provider to Use the IAM Role
+	Configure the IdP to include the necessary claims in the web identity token to allow users to assume the IAM role.
+	Ensure that the token includes the aud and sub claims.
 
 
+Sample code for sts inclusion (3 methods)
+=============================
+sts_client = boto3.client('sts')
 
+# Assume a role with SAML
+response = sts_client.assume_role_with_saml(
+  RoleArn='arn:aws:iam::123456789012:role/MySAMLRole',
+  PrincipalArn='arn:aws:iam::123456789012:saml-provider/MySAMLProvider',
+  SAMLAssertion='BASE64_ENCODED_SAML_ASSERTION',
+  DurationSeconds=3600  # 1 hour
+)
 
+or
 
-	
+response = sts_client.assume_role(
+  RoleArn='arn:aws:iam::123456789012:role/MyAssumeRole',
+  RoleSessionName='MySession'
+)
+
+or
+
+response = sts_client.assume_role_with_web_identity(
+  RoleArn='arn:aws:iam::123456789012:role/MyWebIdentityRole',
+  RoleSessionName='MySession',
+  WebIdentityToken='WEB_IDENTITY_TOKEN',
+  DurationSeconds=3600  # 1 hour
+)
+==========================================================
+GetFederationToken: This method is typically used when you want to grant temporary access to AWS resources to users who are authenticated by an external identity provider (IdP) but do not have an IAM user in your AWS account.
+
+import boto3
+
+# Initialize STS client
+sts_client = boto3.client('sts')
+
+# Get federation token
+response = sts_client.get_federation_token(
+  Name='FederatedUser',
+  Policy='''{
+      "Version": "2012-10-17",
+      "Statement": [
+          {
+              "Effect": "Allow",
+              "Action": "s3:ListBucket",
+              "Resource": "arn:aws:s3:::example-bucket"
+          }
+      ]
+  }''',
+  DurationSeconds=3600  # 1 hour
+)
+
+# Extract temporary credentials
+credentials = response['Credentials']
+access_key = credentials['AccessKeyId']
+secret_key = credentials['SecretAccessKey']
+session_token = credentials['SessionToken']
+
+# Use the temporary credentials to create a new session
+session = boto3.Session(
+  aws_access_key_id=access_key,
+  aws_secret_access_key=secret_key,
+  aws_session_token=session_token
+)
+
+# Use the session to interact with AWS services
+s3_client = session.client('s3')
+response = s3_client.list_buckets()
+print(response)
+===================================================================
+
+AWS Service control policies= AWS Organizations is a service that helps you centrally manage and govern your environment as you grow and scale your AWS resources. It allows you to create multiple AWS accounts and manage them from a single location. One of the key features of AWS Organizations is the use of Service Control Policies (SCPs) to manage permissions across your accounts.
+
+SCPs are a type of policy that you can use to manage permissions in your AWS Organization. They allow you to set permission guardrails on AWS accounts, Organizational Units (OUs), or the entire organization. SCPs do not grant permissions themselves but restrict what permissions can be granted by IAM policies
+
+SCP for Production OU
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*",
+        "s3:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": "s3:DeleteBucket",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "ec2:TerminateInstances",
+        "s3:DeleteObject"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "BoolIfExists": {
+          "aws:MultiFactorAuthPresent": "false"
+        }
+      }
+    }
+  ]
+}
+
+SCP for Development OU
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "*",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "iam:CreateRole",
+        "iam:DeleteRole"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": "*",
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": [
+            "us-east-1",
+            "us-west-2"
+          ]
+        }
+      }
+    }
+  ]
+}
+
+SCP for Security OU
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudtrail:*",
+        "config:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": "*",
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": [
+            "us-east-1",
+            "us-west-2"
+          ]
+        }
+      }
+    }
+  ]
+}
+Applying SCPs
+	Sign in to AWS Management Console:
+	Go to the AWS Management Console.
+	Sign in with your credentials.
+	Navigate to AWS Organizations:
+	In the AWS Management Console, type "Organizations" in the search bar and select "AWS Organizations".
+Create and Attach SCPs:
+	Click on "Policies" in the left-hand menu.
+	Click on "Create policy" and enter the JSON for each SCP.
+	Name and describe the policy, then click "Create policy".
+	Navigate to the "Organizational units" or "Accounts" section.
+	Select the OU or account to which you want to attach the SCP.
+	Click on "Service control policies" and then "Attach policy".
+	Select the SCP you created and click "Attach".
+

@@ -1,0 +1,227 @@
+======================================================
+Auto-scaling EKS Nodes (not pods)
+=========================
+import boto3
+import json
+import datetime
+
+# Initialize clients
+eks = boto3.client('eks')
+autoscaling = boto3.client('autoscaling')
+cloudwatch = boto3.client('cloudwatch')
+
+# Configuration
+EKS_CLUSTER_NAME = 'your-eks-cluster-name'
+ASG_NAME = 'your-auto-scaling-group-name'
+CPU_THRESHOLD = 70  # CPU utilization threshold for scaling
+MIN_NODES = 1
+MAX_NODES = 10
+
+def get_cpu_utilization():
+  # Get CPU utilization metrics
+  end_time = datetime.datetime.utcnow()
+  start_time = end_time - datetime.timedelta(minutes=5)
+  
+  response = cloudwatch.get_metric_statistics(
+      Namespace='AWS/EKS',
+      MetricName='CPUUtilization',
+      Dimensions=[
+          {'Name': 'ClusterName', 'Value': EKS_CLUSTER_NAME}
+      ],
+      StartTime=start_time,
+      EndTime=end_time,
+      Period=300,
+      Statistics=['Average']
+  )
+  
+  if response['Datapoints']:
+      return response['Datapoints'][0]['Average']
+  else:
+      return 0
+
+def scale_nodes(desired_capacity):
+  # Scale the number of nodes in the Auto Scaling group
+  response = autoscaling.update_auto_scaling_group(
+      AutoScalingGroupName=ASG_NAME,
+      DesiredCapacity=desired_capacity
+  )
+  return response
+
+def lambda_handler(event, context):
+  cpu_utilization = get_cpu_utilization()
+  
+  response = autoscaling.describe_auto_scaling_groups(
+      AutoScalingGroupNames=[ASG_NAME]
+  )
+  current_capacity = response['AutoScalingGroups'][0]['DesiredCapacity']
+  
+  if cpu_utilization > CPU_THRESHOLD and current_capacity < MAX_NODES:
+      new_capacity = current_capacity + 1
+      scale_nodes(new_capacity)
+  elif cpu_utilization < CPU_THRESHOLD and current_capacity > MIN_NODES:
+      new_capacity = current_capacity - 1
+      scale_nodes(new_capacity)
+  
+  return {
+      'statusCode': 200,
+      'body': json.dumps('Auto-scaling executed successfully!')
+  }
+==================================================
+Detect and alert on configuration drifts in the EKS cluster.
+==========================
+1. create IAM roles 
+    AmazonEKSReadOnlyAccess
+    AmazonS3ReadOnlyAccess
+    AmazonSNSFullAccess
+2. Configure SNS
+    Set up an SNS topic to send alerts. Subscribe the relevant email addresses or other endpoints to this topic.
+3. Store Baseline Configuration
+    s3://your-bucket/eks-baseline.json
+4. Create the Lambda Function
+    import boto3
+    import json
+    import difflib
+
+    # Initialize clients
+    s3 = boto3.client('s3')
+    eks = boto3.client('eks')
+    sns = boto3.client('sns')
+
+    # Configuration
+    BUCKET_NAME = 'your-bucket'
+    BASELINE_KEY = 'eks-baseline.json'
+    SNS_TOPIC_ARN = 'arn:aws:sns:your-region:your-account-id:your-topic'
+
+    def get_baseline_configuration():
+    # Get the baseline configuration from S3
+    response = s3.get_object(Bucket=BUCKET_NAME, Key=BASELINE_KEY)
+    baseline_config = json.loads(response['Body'].read().decode('utf-8'))
+    return baseline_config
+
+    def get_current_configuration(cluster_name):
+    # Get the current configuration of the EKS cluster
+    response = eks.describe_cluster(name=cluster_name)
+    current_config = response['cluster']
+    return current_config
+
+    def compare_configurations(baseline_config, current_config):
+    # Compare the baseline and current configurations
+    baseline_str = json.dumps(baseline_config, sort_keys=True, indent=4)
+    current_str = json.dumps(current_config, sort_keys=True, indent=4)
+    
+    diff = list(difflib.unified_diff(baseline_str.splitlines(), current_str.splitlines(), lineterm=''))
+    return diff
+
+    def send_alert(diff):
+    # Send an alert using SNS
+    message = "Configuration drift detected in EKS cluster:\n\n" + "\n".join(diff)
+    response = sns.publish(
+        TopicArn=SNS_TOPIC_ARN,
+        Message=message,
+        Subject='EKS Configuration Drift Alert'
+    )
+    return response
+
+    def lambda_handler(event, context):
+    cluster_name = event['cluster_name']
+    
+    baseline_config = get_baseline_configuration()
+    current_config = get_current_configuration(cluster_name)
+    
+    diff = compare_configurations(baseline_config, current_config)
+    
+    if diff:
+        send_alert(diff)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Configuration drift check completed successfully!')
+    }
+
+5. Trigger the Lambda Function
+    You can trigger the Lambda function manually or set up a CloudWatch Event rule to trigger it periodically (e.g., every hour).
+===================================================================
+Regularly rotate secrets
+=========================
+1. Create a Secret in AWS Secrets Manager
+    Navigate to AWS Secrets Manager in the AWS Management Console.
+    Create a new secret and store the initial secret value (e.g., database credentials).
+2. Create an IAM Role for Lambda
+            {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "secretsmanager:GetSecretValue",
+                        "secretsmanager:PutSecretValue",
+                        "eks:DescribeCluster",
+                        "eks:ListClusters",
+                        "eks:ListNodegroups",
+                        "eks:DescribeNodegroup"
+                    ],
+                    "Resource": "*"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "sts:AssumeRole"
+                    ],
+                    "Resource": "*"
+                }
+            ]
+        }
+3. Create the Lambda Function
+    Navigate to AWS Lambda in the AWS Management Console.
+    Create a new Lambda function and choose Python as the runtime.
+    Attach the IAM role created in Step 2 to the Lambda function.
+4. Write the Lambda Function Code
+        import boto3
+        import base64
+        import json
+        from kubernetes import client, config
+
+        def get_secret(secret_name):
+        client = boto3.client('secretsmanager')
+        response = client.get_secret_value(SecretId=secret_name)
+        secret = json.loads(response['SecretString'])
+        return secret
+
+        def update_secret(secret_name, new_secret_value):
+        client = boto3.client('secretsmanager')
+        client.put_secret_value(SecretId=secret_name, SecretString=json.dumps(new_secret_value))
+
+        def update_k8s_secret(namespace, secret_name, new_secret_value):
+        config.load_kube_config()
+        v1 = client.CoreV1Api()
+        secret = v1.read_namespaced_secret(secret_name, namespace)
+        secret.data['password'] = base64.b64encode(new_secret_value['password'].encode()).decode()
+        v1.replace_namespaced_secret(secret_name, namespace, secret)
+
+        def lambda_handler(event, context):
+        secret_name = 'your-secret-name'
+        namespace = 'your-namespace'
+        k8s_secret_name = 'your-k8s-secret-name'
+        
+        # Get the current secret
+        current_secret = get_secret(secret_name)
+        
+        # Generate a new secret value (this is just an example, use a secure method)
+        new_secret_value = {
+            'username': current_secret['username'],
+            'password': 'new-secure-password'
+        }
+        
+        # Update the secret in AWS Secrets Manager
+        update_secret(secret_name, new_secret_value)
+        
+        # Update the Kubernetes Secret
+        update_k8s_secret(namespace, k8s_secret_name, new_secret_value)
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps('Secret rotated successfully')
+        }
+5. Set Up a CloudWatch Event Rule
+    Navigate to CloudWatch in the AWS Management Console.
+    Create a new rule to trigger the Lambda function on a regular schedule (e.g., daily, weekly).

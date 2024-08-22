@@ -46,5 +46,5 @@ CMD ["yarn", "start"]
 
 
 
-ENTRYPOINT: Specifies the main command to be run when the container starts. It's meant to be the primary executable of the container.
+ENTRYPOINT: Specifies the main command to be run when the container starts. It's meant to be the primary executable of the container.you can only have one ENTRYPOINT and one CMD instruction. If you specify multiple ENTRYPOINT or CMD instructions in a Dockerfile, only the last one will take effect.If you need to run multiple commands, you should use a script to orchestrate these commands
 CMD: Provides default arguments for the ENTRYPOINT or specifies the entire command if ENTRYPOINT is not set.

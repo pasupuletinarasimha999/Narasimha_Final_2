@@ -72,3 +72,183 @@ regional resource
 		3)Deploy (Cloud formation, Code deploy,ECS, S3, Beanstalk)
 		4)Codedeploy: Region, App Name, Deployment Group)
 	
+
+DR Failover
+===========
+	1. Setting Up Primary and DR Sites
+		Primary Site Setup
+			Create a VPC:
+				Create a Virtual Private Cloud (VPC) to host your resources.
+				Define subnets in different Availability Zones (AZs) for high availability.
+				Deploy Resources:
+				Deploy your application servers (e.g., EC2 instances) in the primary VPC.
+				Set up databases (e.g., RDS) and other necessary services.
+			Security Groups and IAM Roles:
+				Configure security groups to control inbound and outbound traffic.
+				Create IAM roles and policies to manage permissions for your resources.
+	2. DR Site Setup
+		Create a Secondary VPC:
+			Create a secondary VPC in a different AWS region to act as your DR site.
+			Define subnets in different AZs within the secondary region.
+		Replicate Resources:
+			Set up replication for your databases using AWS services like RDS Read Replicas or Aurora Global Databases.
+			Use AWS DataSync or S3 Cross-Region Replication for file storage.
+		Networking:
+			Set up VPC peering or AWS Transit Gateway to connect the primary and DR VPCs if needed.
+			Configure Route 53 for DNS failover.
+
+2. Fail-Over Mechanisms
+Automated Failover
+RDS Multi-AZ Deployment:
+	Use RDS Multi-AZ for automatic failover of your databases.
+	AWS automatically switches to a standby instance in another AZ in case of failure.
+Elastic Load Balancer (ELB):
+	Use Application Load Balancer (ALB) or Network Load Balancer (NLB) to distribute traffic across multiple instances.
+	Configure health checks to automatically route traffic away from unhealthy instances.
+Route 53 DNS Failover:
+	Configure Route 53 health checks and failover routing policies.
+	Automatically route traffic to the DR site if the primary site becomes unavailable.
+
+================================================================================
+Steps to Perform a Database Migration Using AWS DMS
+
+Step 1: Set Up Your AWS Account
+	Sign in to AWS Management Console: Go to the AWS Management Console.
+	Create IAM Roles: Create IAM roles with the necessary permissions for DMS to access your databases.
+Step 2: Create Source and Target Databases
+	Source Database: Ensure your source database is accessible and has the necessary permissions for DMS.
+	Target Database: Set up your target database in AWS (e.g., Amazon RDS, Amazon Aurora).
+Step 3: Create a Replication Instance
+	Navigate to DMS: In the AWS Management Console, type "DMS" in the search bar and select "Database Migration Service".
+	Create Replication Instance:
+		Click on "Replication instances" in the left-hand menu.
+		Click on "Create replication instance".
+		Enter the instance details (name, instance class, VPC, etc.).
+		Click "Create".
+Step 4: Configure Source and Target Endpoints
+	Create Source Endpoint:
+	Click on "Endpoints" in the left-hand menu.
+	Click on "Create endpoint".
+	Select "Source endpoint".
+	Enter the connection details for your source database.
+	Test the connection to ensure it works.
+	Click "Create endpoint".
+	Create Target Endpoint:
+	Click on "Endpoints" in the left-hand menu.
+	Click on "Create endpoint".
+	Select "Target endpoint".
+	Enter the connection details for your target database.
+	Test the connection to ensure it works.
+	Click "Create endpoint".
+Step 5: Create a Migration Task
+Create Task:
+	Click on "Database migration tasks" in the left-hand menu.
+	Click on "Create task".
+	Enter the task details (name, replication instance, source and target endpoints).
+	Select the migration type (Full load, CDC, or both).
+	Optionally, define table mappings and transformations.
+	Click "Create task".
+	Start the Task:
+	Once the task is created, select it and click "Start".
+Step 6: Monitor the Migration
+	Monitor Progress: Use the AWS DMS console to monitor the progress of the migration task.
+	CloudWatch Metrics: Check CloudWatch metrics and logs for detailed information and troubleshooting.
+
+=======================================================================
+API Gateway
+Create a REST API:
+	Go to the API Gateway console.
+	Click on "Create API" and choose "REST API".
+	Create a Resource:
+	In the API Gateway console, select your API.
+	Click on "Actions" and then "Create Resource".
+	Enter a Resource Name (e.g., hello) and Resource Path (e.g., /hello).
+Create a Method:
+	Select the newly created resource.
+	Click on "Actions" and then "Create Method".
+	Choose GET and click the checkmark.
+Set Up Integration:
+	Select "Lambda Function" as the integration type.
+	Choose the region where your Lambda function is deployed.
+	Enter the name of your Lambda function.
+	Click "Save" and then "OK" to give API Gateway permission to invoke your Lambda function.
+Deploy the API:
+	Click on "Actions" and then "Deploy API".
+	Create a new stage (e.g., dev).
+	Note the Invoke URL provided after deployment.
+
+
+API Gateway: Manages external client requests and routes them to the appropriate microservices.
+Service Mesh (e.g., Istio): Manages internal communication between microservices, providing features like load balancing, retries, and observability.
+	External Request: A client sends a request to the API Gateway.
+	Routing: The API Gateway routes the request to the appropriate microservice in one of the EKS clusters.
+	Internal Communication: Once the request reaches the microservice, any subsequent internal communication between microservices is managed by the service mesh.
+	Traffic Management: The service mesh handles retries, load balancing, and circuit breaking for internal service-to-service calls.
+	Security: The API Gateway handles external authentication, while the service mesh ensures secure internal communication with mTLS.
+	Observability: Both the API Gateway and the service mesh provide monitoring and logging, giving you a complete view of the request lifecycle.
+
+Step-by-Step Process
+	DNS Resolution: The DNS name is resolved to an IP address.
+	Connection Establishment: A TCP (and optionally SSL/TLS) connection is established to the resolved IP address.
+	HTTP Request: The browser sends an HTTP request to the server.
+	Routing to API Gateway: The request is routed to the API Gateway, either directly or via a load balancer.
+	API Gateway Processing: The API Gateway processes the request and routes it to the appropriate backend service.
+	Backend Service Response: The backend service processes the request and sends a response back to the API Gateway.
+	Returning the Response: The API Gateway sends the response back to the browser.
+Example API Gateway Route:
+	{
+	"swagger": "2.0",
+	"info": {
+		"title": "Example API",
+		"version": "1.0"
+	},
+	"paths": {
+		"/example": {
+		"get": {
+			"x-amazon-apigateway-integration": {
+			"uri": "http://example-service.example.com",
+			"httpMethod": "GET",
+			"type": "http_proxy"
+			}
+		}
+		}
+	}
+	}
+Detailed Explanation
+1. Swagger Specification
+	The configuration uses the Swagger (OpenAPI) specification, which is a standard way to define RESTful APIs. The swagger field indicates the version of the Swagger specification being used.
+	"swagger": "2.0"
+2. API Information
+	The info object provides metadata about the API, such as its title and version.
+	"info": {
+	"title": "Example API",
+	"version": "1.0"
+	}
+	title: The name of the API.
+	version: The version of the API.
+3. Paths
+	The paths object defines the available endpoints (or routes) in the API. Each key in the paths object represents a specific  endpoint.
+
+	"paths": {
+	"/example": {
+		"get": {
+		"x-amazon-apigateway-integration": {
+			"uri": "http://example-service.example.com",
+			"httpMethod": "GET",
+			"type": "http_proxy"
+		}
+		}
+	}
+	}
+	/example: This is the path of the endpoint. In this case, it represents the /example endpoint.
+	get: This defines the HTTP method for the /example endpoint. Here, it specifies that the endpoint supports the GET method.
+4. Integration
+	The x-amazon-apigateway-integration object specifies how API Gateway should integrate with the backend service. This is an extension to the Swagger specification provided by AWS.
+	"x-amazon-apigateway-integration": {
+	"uri": "http://example-service.example.com",
+	"httpMethod": "GET",
+	"type": "http_proxy"
+	}
+	uri: The URI of the backend service that API Gateway should forward the request to. In this example, it is http://example-service.example.com.
+	httpMethod: The HTTP method to use when making the request to the backend service. Here, it is GET.
+	type: The type of integration. In this case, it is http_proxy, which means that API Gateway will act as a simple proxy, forwarding the request to the specified URI.

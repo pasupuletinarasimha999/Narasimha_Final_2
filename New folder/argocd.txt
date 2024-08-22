@@ -24,3 +24,61 @@ spec:
     namespace: 'test-ns'
   project: test-project
 =========================================================================
+
+
+
+deployment into multiple region of eks using argocd for high availability
+========================================================================
+1. Set Up EKS Clusters in Multiple Regions
+2. Install Argo CD
+    kubectl create namespace argocd
+    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+3. Configure Argo CD to Manage Multiple Clusters
+    # Set up kubeconfig for each cluster
+    aws eks --region us-east-1 update-kubeconfig --name my-cluster-us-east-1
+    aws eks --region us-west-2 update-kubeconfig --name my-cluster-us-west-2
+
+    # Add clusters to Argo CD
+    argocd cluster add <context-name-us-east-1>
+    argocd cluster add <context-name-us-west-2>
+4. Create Argo CD Applications
+    Example application.yaml for us-east-1:
+        apiVersion: argoproj.io/v1alpha1
+        kind: Application
+        metadata:
+          name: my-app-us-east-1
+          namespace: argocd
+        spec:
+          project: default
+          source:
+            repoURL: 'https://github.com/your-repo/your-app'
+            targetRevision: HEAD
+            path: 'path/to/manifests'
+          destination:
+            server: 'https://<us-east-1-cluster-api-server>'
+            namespace: 'default'
+          syncPolicy:
+            automated:
+              prune: true
+              selfHeal: true
+    Example application.yaml for us-west-2:
+          apiVersion: argoproj.io/v1alpha1
+          kind: Application
+          metadata:
+            name: my-app-us-west-2
+            namespace: argocd
+          spec:
+            project: default
+            source:
+              repoURL: 'https://github.com/your-repo/your-app'
+              targetRevision: HEAD
+              path: 'path/to/manifests'
+            destination:
+              server: 'https://<us-west-2-cluster-api-server>'
+              namespace: 'default'
+            syncPolicy:
+              automated:
+                prune: true
+                selfHeal: true
+
+==================================================================================

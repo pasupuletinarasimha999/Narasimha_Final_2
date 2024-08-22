@@ -1,0 +1,12 @@
+1. Amazon EKS (Elastic Kubernetes Service)
+Kubernetes Version: The latest supported Kubernetes version on Amazon EKS is 1.29.
+2. Terraform
+Version: The latest stable release of Terraform is 1.9.2. 
+3. Helm
+Version: The latest stable release of Helm is 3.15.1. 
+4. Jenkins
+Version: The latest Long-Term Support (LTS) release of Jenkins is 2.414.1. 
+5. Maven
+Version: The latest stable release of Maven is 3.9.8. 
+6. Ansible
+Version: The latest stable release of Ansible is 2.15.3. 

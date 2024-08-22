@@ -1,4 +1,4 @@
-Git Pull vs Git Merge
+Git Pull vs Git fetch
 git pull and git fetch are two distinct commands in Git that serve different purposes, primarily related to updating a local repository with changes from a remote repository
 git pull is a combination of git fetch and git merge. It retrieves data from the remote repository and automatically merges it into the local branch.
 git fetch is used to retrieve data from remote repositories, but it does not automatically merge the data into the local branch. It only downloads the data and stores it in the local repository as a separate branch, which means the developer must manually merge the fetched data with the remote branch.

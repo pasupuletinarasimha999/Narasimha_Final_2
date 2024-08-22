@@ -264,3 +264,204 @@ straategy
 services
 output
 runs-on
+===========================================
+
+Github Actions -> Sonarqube ->synk(dependencies scanner) -> checkov(docker file scan) -> docker build ->trivy(container image scanning) -> container signing -> kubernetes
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build the application
+        run: |
+          echo "Building the application..."
+          ./build_script.sh  # Replace with your actual build script
+        env:
+          CI: true
+
+  sast:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarcloud-github-action@v1.5
+        with:
+          args: >
+            -Dsonar.projectKey=$SONAR_PROJECT_KEY
+            -Dsonar.organization=$SONAR_ORGANIZATION
+            -Dsonar.sources=.
+            -Dsonar.host.url=$SONAR_HOST_URL
+            -Dsonar.login=$SONAR_TOKEN
+
+  sca:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions@v1
+        with:
+          args: test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  docker_scan:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Checkov
+        run: pip install checkov
+
+      - name: Run Checkov scan on Dockerfile
+        run: checkov -d .
+
+  container_build:
+    runs-on: ubuntu-latest
+    needs: [build, sast, sca, docker_scan]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }}
+
+  container_scan:
+    runs-on: ubuntu-latest
+    needs: container_build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Run Trivy scan on Docker image
+        run: trivy image ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }}
+
+  deploy_test:
+    runs-on: ubuntu-latest
+    needs: container_scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v1
+        with:
+          version: 'latest'
+
+      - name: Deploy to Test environment
+        run: kubectl apply -f k8s/test-deployment.yaml
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG_TEST }}
+
+  deploy_preprod:
+    runs-on: ubuntu-latest
+    needs: deploy_test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v1
+        with:
+          version: 'latest'
+
+      - name: Deploy to Pre-Production environment
+        run: kubectl apply -f k8s/preprod-deployment.yaml
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG_PREPROD }}
+
+  deploy_prod:
+    runs-on: ubuntu-latest
+    needs: deploy_preprod
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v1
+        with:
+          version: 'latest'
+
+      - name: Deploy to Production environment
+        run: kubectl apply -f k8s/prod-deployment.yaml
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG_PROD }}
+    environment:
+      name: production
+      url: http://your-production-url
+    # Manual approval step
+    environment:
+      name: production
+      url: http://your-production-url
+      reviewers:
+        - your-github-username
+
+  dast:
+    runs-on: ubuntu-latest
+    needs: deploy_prod
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install OWASP ZAP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zaproxy
+
+      - name: Run OWASP ZAP scan
+        run: |
+          zap-cli start
+          zap-cli open-url http://your-app-url
+          zap-cli spider http://your-app-url
+          zap-cli active-scan http://your-app-url
+          zap-cli report -o zap_report.html -f html
+      artifacts:
+        files:
+          - zap_report.html

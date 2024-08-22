@@ -1,1 +1,20 @@
 terrascan
+
+
+Prometheus, PromQL expressions
+Grafana dashboards, PagerDuty, Jaegar (any)
+OpenTelemetry, OpenTracing (any)
+EasticSearch, LogStash, Kibana (ELK) stack big plus
+Micrometer, Loki, Google BigQuery logging (any)
+Automate failover/scale-up/scale-down
+Automate operational, perf testing, activities
+Load testing, chaos testing a plus
+K6/JMeter/ChaosToolkit/Gremlin
+Hands on AWS infrastructure-as-code
+One or more of Kubernetes, Helm, Ansible, Terraform
+
+
+explain – CMake, Makefile, cmocka, Maven, MS Build, NPM, SCA
+
+
+how to make deployment into multiple region of eks using argocd for high availability

@@ -176,63 +176,17 @@ It handles project cleaning, such as removing the target directory.
     install: Installs the package in the local repository. Stores the jar in /m2/repositry
     deploy: Copies the package to a remote repository.
 
-What is the site lifecycle in Maven?
-It handles the creation of the project's site documentation.
-
-What is a Maven profile?
-A profile is a set of configuration values that can be used to customize the build process for different environments.
-
-How do you activate a Maven profile?
-Profiles can be activated via the command line, settings.xml, or POM file.
-
 What is the dependencyManagement element in POM?
 It is used to manage dependency versions in multi-module projects.
 
 What is the parent element in POM?
 It is used to inherit configuration from another POM file.
 
-What is a multi-module project in Maven?
-A project that is composed of multiple sub-projects or modules.
-
 How do you create a multi-module project in Maven?
 Define a parent POM and add module definitions.
 
-What is the repositories element in POM?
-It specifies remote repositories to be used by Maven.
-
-What is the pluginRepositories element in POM?
-It specifies remote repositories for plugins.
-
-
 How do you exclude a transitive dependency in Maven?
 Use the <exclusions> element within the <dependency> element.
-
-What is the dependency:tree goal in Maven?
-It prints the dependency tree for the project.
-
-How do you create a custom Maven plugin?
-Create a Maven project with the maven-plugin packaging type and implement the Mojo interface.
-
-What is the maven-assembly-plugin?
-It is used to create distributions of the project, such as ZIP or TAR files.
-
-What is the maven-shade-plugin?
-It is used to create an uber-jar, which includes all dependencies.
-
-What is the maven-surefire-plugin?
-It is used to run unit tests during the build process.
-
-What is the maven-failsafe-plugin?
-It is used to run integration tests.
-
-What is the maven-dependency-plugin?
-It provides goals for managing project dependencies.
-
-What is the maven-release-plugin?
-It is used to automate the release process.
-
-What is the maven-enforcer-plugin?
-It is used to enforce rules on the project, such as dependency convergence.
 
 How do you handle version conflicts in Maven?
 Use the dependencyManagement section or specify the version explicitly in the dependencies section.
@@ -240,29 +194,8 @@ Use the dependencyManagement section or specify the version explicitly in the de
 What is the effective-pom in Maven?
 It is the final POM that Maven uses after merging all configurations.
 
-How do you generate the effective-pom?
-Use the command: mvn help:effective-pom
-
-What is the maven-antrun-plugin?
-It allows you to run Ant tasks within a Maven build.
-
 How do you configure a proxy in Maven?
 Configure the proxy settings in the settings.xml file.
-
-What is the maven-compiler-plugin?
-It is used to compile the project's source code.
-
-How do you change the Java version for a Maven project?
-Configure the maven-compiler-plugin with the desired source and target versions.
-
-What is the maven-war-plugin?
-It is used to build WAR files for web applications.
-
-What is the maven-jar-plugin?
-It is used to build JAR files.
-
-What is the maven-eclipse-plugin?
-It is used to generate Eclipse project files.
 
 How do you skip tests in Maven?
 Use the -DskipTests or -Dmaven.test.skip=true command-line options.
@@ -272,9 +205,6 @@ It is used to deploy the built artifacts to a remote repository.
 
 How do you configure a custom repository in Maven?
 Add the repository configuration to the repositories section in the POM file or settings.xml.
-
-What is the maven-invoker-plugin?
-It is used to run Maven builds in a separate process.
 
 How do you create a BOM (Bill of Materials) in Maven?
 Create a POM file with the pom packaging type and list the dependencies in the dependencyManagement section.
@@ -286,11 +216,6 @@ Configure the maven-compiler-plugin in each module's POM file with the desired J
             <maven.compiler.source>1.8</maven.compiler.source>
         </properties>
 
-How do you handle cyclic dependencies in Maven?
-Refactor the code to remove cyclic dependencies or use dependency exclusions.
-
-What is the maven-assembly-plugin descriptor?
-It is an XML file that defines the structure and contents of the assembly.
 
 How do you create a custom lifecycle in Maven?
 Define a new lifecycle in a custom plugin and bind goals to the lifecycle phases.
@@ -377,24 +302,11 @@ Define a new lifecycle in a custom plugin and bind goals to the lifecycle phases
         Now, when you run the custom lifecycle profile, Maven will execute the custom lifecycle phases and 
         mvn clean install -Pcustom
 
-
-What is the maven-scm-plugin?
-It is used to interact with the source control management system.
-
 How do you configure Maven to use a specific JDK?
 Set the JAVA_HOME environment variable or configure the toolchains.xml file.
 
-What is the maven-toolchains-plugin?
-It is used to configure and select different toolchains, such as JDKs, for the build process.
-
 How do you manage large dependency trees in Maven?
 Use the dependencyManagement section and BOMs to centralize dependency versions.
-
-What is the maven-invoker-plugin used for?
-It is used to run integration tests that involve executing Maven builds.
-
-How do you create a custom archetype in Maven?
-Create a project template and package it as an archetype using the maven-archetype-plugin.
 
 What is the maven-gpg-plugin?
 It is used to sign artifacts with GPG keys.

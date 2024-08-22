@@ -1,0 +1,242 @@
+Kubernetes common errors:
+
+1. **CrashLoopBackOff**:
+ - **Description**: A pod repeatedly crashes and restarts.
+ - **Troubleshooting**:
+ - Check pod logs: `kubectl logs <pod-name>`.
+ - Describe the pod for more details: `kubectl describe pod <pod-name>`.
+ - Investigate the application's start-up and initialization code.
+
+2. **ImagePullBackOff**:
+ - **Description**: Kubernetes cannot pull the container image from the registry.
+ - **Troubleshooting**:
+ - Verify the image name and tag.
+ - Check the image registry credentials.
+ - Ensure the image exists in the specified registry.
+
+3. **Pending Pods**:
+ - **Description**: Pods remain in the "Pending" state and are not scheduled.
+ - Troubleshooting:
+ - Check node resources (CPU, memory) to ensure there is enough capacity.
+ - Ensure the nodes are labeled correctly if using node selectors or affinities.
+ - Verify there are no taints on nodes that would prevent scheduling.
+
+4. Node Not Ready:
+ - Description: One or more nodes are in a "NotReady" state.
+ - Troubleshooting:
+ - Check node status: `kubectl describe node <node-name>`.
+ - Review kubelet logs on the affected node.
+ - Ensure the node has network connectivity.
+
+5. Service Not Working
+ - Description: Services are not accessible or routing traffic correctly.
+ - Troubleshooting:
+ - Check the service and endpoints: `kubectl get svc` and `kubectl get endpoints`.
+ - Verify network policies and firewall rules.
+ - Ensure the pods backing the service are healthy and running.
+
+6. **Insufficient Resources**:
+ - **Description**: Pods cannot be scheduled due to insufficient resources.
+ - **Troubleshooting**:
+ - Review resource requests and limits in pod specifications.
+ - Scale the cluster by adding more nodes.
+
+8. **PersistentVolume Claims Pending**:
+ - **Description**: PVCs remain in a "Pending" state.
+ - **Troubleshooting**:
+ - Check if there are available PVs that match the PVC specifications.
+ - Ensure the storage class exists and is configured correctly.
+ - Verify that the underlying storage backend is healthy.
+
+9. **Pod Stuck Terminating**:
+ - **Description**: Pods get stuck in a "Terminating" state.
+ - **Troubleshooting**:
+ - Check for finalizers that might be preventing pod deletion.
+ - Review the logs for shutdown hooks or long-running processes.
+ - Force delete the pod if necessary: `kubectl delete pod <pod-name> --force --grace-period=0`.
+
+10. **DNS Resolution Issues**:
+ - **Description**: DNS lookups within the cluster fail.
+ - **Troubleshooting**:
+ - Check the DNS pod logs (e.g., CoreDNS): `kubectl logs <coredns-pod>`.
+ - Ensure the DNS service is running: `kubectl get svc -n kube-system`.
+ - Verify network policies and firewall rules do not block DNS traffic.
+
+
+𝑫𝒆𝒃𝒖𝒈𝒈𝒊𝒏𝒈 𝑲𝒖𝒃𝒆𝒓𝒏𝒆𝒕𝒆𝒔 𝑷𝒐𝒅 𝒇𝒂𝒊𝒍𝒖𝒓𝒆𝒔 ☸ 🤔
+𝘗𝘰𝘥𝘴 𝘤𝘢𝘯 𝘩𝘢𝘷𝘦 𝒔𝒕𝒂𝒓𝒕𝒖𝒑 𝘢𝘯𝘥 𝒓𝒖𝒏𝒕𝒊𝒎𝒆 𝘦𝘳𝘳𝘰𝘳𝘴 
+📌 𝑺𝒕𝒂𝒓𝒕𝒖𝒑 𝒆𝒓𝒓𝒐𝒓𝒔 𝒊𝒏𝒄𝒍𝒖𝒅𝒆:
+✅ ImagePullBackoff
+✅ ImageInspectError
+✅ ErrImagePull
+✅ ErrImageNeverPull
+✅ RegistryUnavailable
+✅ InvalidImageName
+
+📌 𝑹𝒖𝒏𝒕𝒊𝒎𝒆 𝒆𝒓𝒓𝒐𝒓𝒔 𝒊𝒏𝒄𝒍𝒖𝒅𝒆:
+✅ CrashLoopBackOff
+✅ RunContainerError
+✅ KillContainerError
+✅ VerifyNonRootError
+✅ RunInitContainerError
+✅ CreatePodSandboxError
+✅ ConfigPodSandboxError
+✅ KillPodSandboxError
+✅ SetupNetworkError
+✅ TeardownNetworkError
+
+❗𝑰𝒎𝒂𝒈𝒆𝑷𝒖𝒍𝒍𝑩𝒂𝒄𝒌𝑶𝒇𝒇
+✍ This error appears when hashtag#k8s isn't able to retrieve the image for one of the hashtag#containers of the Pod.
+There are three common culprits:
+✅ The image name is invalid
+✅ You specified a non-existing tag for the image.
+✅ The image that you're trying to retrieve belongs to a private registry and the cluster doesn't have credentials to access it.
+The first two cases can be solved by correcting the image name and tag.
+For the last, one should add the credentials to your private registry in a Secret and reference it in the Pods
+
+❗𝑹𝒖𝒏𝑪𝒐𝒏𝒕𝒂𝒊𝒏𝒆𝒓𝑬𝒓𝒓𝒐𝒓
+✍ The error appears when the container is unable to start before application
+Common causes:
+✅ Mounting a not-existent volume such as ConfigMap or Secrets
+✅ Mounting a read-only volume as read-write
+More detailed aspect can be found by describing the 'failed' pod
+
+❗𝑪𝒓𝒂𝒔𝒉𝑳𝒐𝒐𝒑𝑩𝒂𝒄𝒌𝑶𝒇𝒇
+✍ If the container can't start, then Kubernetes shows the CrashLoopBackOff message as a status.
+Usually, a container can't start when:
+✅ There's an error in the application that prevents it from starting.
+✅ You misconfigured the container.
+✅ The Liveness probe failed too many times.
+
+❗𝑷𝒐𝒅𝒔 𝒊𝒏 𝒂 𝑷𝒆𝒏𝒅𝒊𝒏𝒈 𝒔𝒕𝒂𝒕𝒆
+✍ Assuming that the scheduler component is running fine, here are the causes:
+✅ The cluster doesn't have enough resources such as CPU and memory to run the Pod.
+✅ The current Namespace has a ResourceQuota object and creating the Pod will make the Namespace go over the quota.
+✅ The Pod is bound to a Pending PersistentVolumeClaim.
+The best option is to inspect the Events section in the "kubectl describe"
+
+
+
+NoSchedule: Prevents new Pods that do not tolerate the taint from being scheduled on the Node.
+PreferNoSchedule: Prefers not to schedule new Pods that do not tolerate the taint on the Node, but allows it if necessary.
+NoExecute: Evicts existing Pods that do not tolerate the taint and prevents new Pods that do not tolerate the taint from being scheduled on the Node.
+
+EKS Upgrade
+============
+Check the Current Version: Verify the current Kubernetes version of your EKS cluster.
+    aws eks describe-cluster --name <cluster-name> --query "cluster.version" --output text
+Initiate the Upgrade: Start the upgrade process for the control plane.
+    aws eks update-cluster-version --name <cluster-name> --kubernetes-version <new-version>
+Monitor the Upgrade: Check the status of the upgrade.
+    aws eks describe-cluster --name <cluster-name> --query "cluster.status" --output text
+
+Upgrade Managed Node Groups
+ aws eks list-nodegroups --cluster-name <cluster-name>
+ aws eks update-nodegroup-version --cluster-name <cluster-name> --nodegroup-name <node-group-name> --kubernetes-version <new-version>
+ aws eks describe-nodegroup --cluster-name <cluster-name> --nodegroup-name <node-group-name> --query "nodegroup.status" --output text
+
+1. Explain the Deployment Manifest File
+A deployment manifest file in Kubernetes is a YAML or JSON file that defines the desired state of a deployment. It includes specifications for the deployment, such as the number of replicas, the container image to use, and other configurations. Here’s an example of a simple deployment manifest file in YAML:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-container
+        image: my-image:latest
+        ports:
+        - containerPort: 80
+2. Choreography vs Orchestration in Kubernetes
+Choreography: In a choreography-based system, each service works independently and communicates with other services through events. There is no central controller; instead, services react to events and perform their tasks. This approach is more decentralized and can be more resilient but harder to manage and debug.
+
+Orchestration: In an orchestration-based system, a central controller (orchestrator) manages the interactions between services. Kubernetes itself acts as an orchestrator, managing the deployment, scaling, and operations of application containers across clusters of hosts. This approach provides more control and easier management but can create a single point of failure.
+
+3. Difference Between Stateless and Stateful Microservices
+Stateless Microservices: These do not maintain any state between requests. Each request is independent, and the service does not store any data about previous requests. This makes them easier to scale and manage.
+
+Stateful Microservices: These maintain state between requests. They store data about previous interactions, which can be necessary for certain applications. Managing stateful services is more complex, especially in terms of scaling and data consistency.
+
+4. Role of Domain Events in Microservices
+Domain events are a way to communicate between microservices. They represent significant changes or occurrences within a domain. When a microservice publishes a domain event, other microservices can subscribe to these events and react accordingly. This helps in decoupling services and allows for more flexible and scalable architectures.
+
+5. How the Pods are Communicating with Each Other?
+Pods in Kubernetes communicate with each other using the following methods:
+Cluster IP: Each pod gets an internal IP address, and services can communicate with each other using these IPs.
+DNS: Kubernetes provides DNS resolution for services, allowing pods to communicate using service names.
+Service Discovery: Kubernetes services provide a stable IP address and DNS name for a set of pods, enabling reliable communication.
+
+6. What is Pod Security Policy?
+Pod Security Policy (PSP) is a cluster-level resource in Kubernetes that controls the security settings applied to pods. It defines a set of conditions that a pod must meet to be accepted into the system, such as running as a non-root user, using specific volume types, or restricting certain capabilities.
+
+7. What is the Blue/Green Deployment Pattern?
+Blue/Green Deployment is a release management strategy that reduces downtime and risk by running two identical production environments, only one of which (Blue or Green) serves live production traffic at any time. When deploying a new version, it is deployed to the idle environment (e.g., Green), and after testing, traffic is switched from the active environment (e.g., Blue) to the new one.
+
+8. How Do You Secure Microservices?
+Securing microservices involves several practices:
+Authentication and Authorization: Use OAuth, JWT, or other mechanisms to ensure only authorized users and services can access the microservices.
+Encryption: Encrypt data in transit using TLS and data at rest using appropriate encryption methods.
+API Gateway: Use an API gateway to manage and secure API traffic.
+Network Policies: Implement network policies to control traffic between microservices.
+Monitoring and Logging: Continuously monitor and log activities to detect and respond to security incidents.
+
+9. What is Service in Kubernetes? How Many Types Are There?
+A service in Kubernetes is an abstraction that defines a logical set of pods and a policy to access them. There are several types of services:
+ClusterIP: Exposes the service on a cluster-internal IP. This is the default type.
+NodePort: Exposes the service on each node’s IP at a static port.
+LoadBalancer: Exposes the service externally using a cloud provider’s load balancer.
+ExternalName: Maps the service to the contents of the externalName field (e.g., foo.bar.example.com).
+
+10. How Does Ingress Help in Kubernetes?
+Ingress is a Kubernetes resource that manages external access to services within a cluster, typically HTTP. It provides load balancing, SSL termination, and name-based virtual hosting. Ingress controllers, which are responsible for fulfilling the Ingress rules, can be implemented using various tools like NGINX, Traefik, or HAProxy.
+
+11. What is API Versioning and Why is it Important in Microservices?
+API versioning is the practice of managing changes to an API by assigning version numbers to different iterations. It is important because:
+Backward Compatibility: Ensures that existing clients can continue to use the API without breaking when new features or changes are introduced.
+Controlled Evolution: Allows the API to evolve and improve over time without disrupting existing services.
+Clear Communication: Provides a clear way to communicate changes and updates to API consumers.
+
+12. What are Taints and Tolerations in Kubernetes and How Do They Work?
+Taints: Taints are applied to nodes and allow a node to repel a set of pods. They are used to ensure that pods are not scheduled onto inappropriate nodes.
+Tolerations: Tolerations are applied to pods and allow them to be scheduled onto nodes with matching taints. They do not guarantee scheduling but allow the scheduler to consider the node.
+
+13. Handling Increased Traffic on Kubernetes Cluster
+To handle increased traffic on a Kubernetes cluster, you can:
+Horizontal Pod Autoscaling (HPA): Automatically scale the number of pod replicas based on CPU utilization or other metrics.
+Cluster Autoscaling: Automatically adjust the size of the cluster by adding or removing nodes based on the workload.
+Load Balancing: Use services and ingress controllers to distribute traffic evenly across pods.
+Resource Requests and Limits: Define resource requests and limits to ensure pods have the necessary resources and prevent resource contention.
+
+14. Common Issues When Spinning Up a Container in Kubernetes
+Some common issues include:
+Image Pull Errors: Issues with pulling the container image from the registry.
+Resource Constraints: Insufficient CPU or memory resources to schedule the pod.
+Configuration Errors: Misconfigurations in the deployment manifest or environment variables.
+Network Issues: Problems with network connectivity or DNS resolution.
+Security Policies: Pod security policies or network policies preventing the pod from running.
+
+15. Comprehensive Backup Strategy for Kubernetes
+A comprehensive backup strategy for Kubernetes should include:
+Etcd Backup: Regularly back up the etcd database, which stores the cluster state.
+Persistent Volume Backup: Back up data stored in persistent volumes using tools like Velero.
+Configuration Backup: Back up Kubernetes manifests, configurations, and secrets.
+Automated Backups: Implement automated backup schedules and ensure backups are stored securely.
+Disaster Recovery Plan: Develop and test a disaster recovery plan to ensure you can restore the cluster and data in case of failure.
+
+ 
+
+
+
+
+
+ 
